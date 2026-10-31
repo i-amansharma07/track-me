@@ -26,10 +26,16 @@
 - Configure Auth.js with Google OAuth.
 - Implement session resolution and protected route middleware.
 
-## Phase 3: Core Backend Infrastructure (PENDING)
+## Phase 3: Core Backend Infrastructure (COMPLETE)
 
-- Centralized AppError, HTTP response helpers.
-- Database transaction utilities.
+- Enhanced `AppError` with error codes and standard helpers.
+- Standardized HTTP response formats (success, error, pagination).
+- Pagination utilities with defaults and caps.
+- Zod validation utilities (`validateWithSchema`) that throw structured errors.
+- Pino structured logging with request correlation IDs, safe error logging, redaction, request duration/status tracking.
+- Auth user helper (`resolveAuthenticatedUser`) for future session resolution.
+- TypeScript conventions documented.
+- Unit tests added for errors, validation, responses, pagination, logging.
 
 ## Phase 4: Task Management Module (PENDING)
 

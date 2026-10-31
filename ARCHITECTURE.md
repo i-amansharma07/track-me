@@ -33,3 +33,9 @@ Route Handler → Controller → Service → Repository → Prisma → PostgreSQ
 - Database-level partial unique indexes enforce single active task and single open time log.
 - Schema uses UUIDs for Task and TaskTimeLog; Auth.js-compatible User IDs.
 - Custom SQL migration for partial unique indexes and title check constraint.
+
+## TypeScript Conventions
+
+Controllers: export class `XController`; receive validated objects; return `HttpResponse`.
+Services: export class `XService`; accept `XRepository` in constructor; no HTTP dependencies.
+Repositories: export class `XRepository`; encapsulate Prisma queries; return domain objects or arrays.

@@ -1,18 +1,49 @@
-export type HttpResponse<T> = {
-  success: boolean;
-  data?: T;
-  error?: {
-    message: string;
-    code?: string;
-  };
+export type HttpSuccessResponse<T> = {
+  success: true;
+  message?: string;
+  data: T;
+  pagination?: PaginationMeta;
 };
 
-export const createSuccessResponse = <T>(data: T): HttpResponse<T> => ({
+export type HttpErrorResponse = {
+  success: false;
+  message: string;
+  code: string;
+};
+
+export type PaginationMeta = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
+export type PaginatedResult<T> = {
+  data: T[];
+  pagination: PaginationMeta;
+};
+
+export const createSuccessResponse = <T>(
+  data: T,
+  message = "Operation successful",
+): HttpSuccessResponse<T> => ({
   success: true,
+  message,
   data,
 });
 
-export const createErrorResponse = (message: string, code?: string): HttpResponse<never> => ({
+export const createSuccessResponseWithPagination = <T>(
+  paginated: PaginatedResult<T>,
+  message = "Operation successful",
+): HttpSuccessResponse<T[]> => ({
+  success: true,
+  message,
+  data: paginated.data,
+  pagination: paginated.pagination,
+});
+
+export const createErrorResponse = (message: string, code: string): HttpErrorResponse => ({
   success: false,
-  error: { message, code },
+  message,
+  code,
 });
