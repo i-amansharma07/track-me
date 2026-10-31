@@ -1,34 +1,42 @@
 .list {
-  color: var(--color-text-secondary);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border-subtle);
 }
 
 .title {
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-xs);
   font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-3);
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: var(--font-size-sm);
-}
-
-.table th,
-.table td {
-  padding: var(--space-2) var(--space-3);
-  text-align: left;
-  border-bottom: 1px solid var(--color-border-subtle);
-}
-
-.table th {
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.logs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  font-size: var(--font-size-xs);
+}
+
+.logLabel {
+  color: var(--color-text-secondary);
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
-.loading,
-.empty {
-  font-size: var(--font-size-sm);
+.times {
   color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
 }

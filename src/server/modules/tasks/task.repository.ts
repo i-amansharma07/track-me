@@ -26,6 +26,7 @@ function getClient(tx?: any) {
 
 export class TaskRepository {
   async create(data: CreateTaskInput, tx?: any) {
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const client = tx || prisma;
     return client.task.create({

@@ -114,7 +114,9 @@ export default function TasksPage() {
           <h1 className={styles.pageTitle}>Tasks</h1>
           <Button onClick={() => setShowForm(true)} size="md">New Task</Button>
         </div>
-        <TaskFilters onFilter={(f) => { setFilters(f); setPage(1); }} />
+        <div className={styles.filtersSection}>
+          <TaskFilters onFilter={(f) => { setFilters(f); setPage(1); }} />
+        </div>
         <TaskList
           tasks={tasks}
           onEdit={setEditingTask}

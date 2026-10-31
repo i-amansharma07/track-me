@@ -35,10 +35,7 @@ export class TaskController {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const body: Record<string, unknown> = await req.json();
       const validated = validateWithSchema(createTaskSchema, { title: body.title, tag: body.tag });
-      const userId =
-        typeof body.userId === "string"
-          ? String(body.userId)
-          : resolveSessionUser(req as Request).userId;
+      const userId = (await resolveSessionUser(req as Request)).userId;
       const task = await service.create({ ...validated, userId });
       return NextResponse.json(createSuccessResponse(task, "Task created"), { status: 201 });
     } catch (err: unknown) {
@@ -52,7 +49,7 @@ export class TaskController {
   async list(req: NextRequest) {
     try {
       const url = new URL(req.url);
-      const userId = url.searchParams.get("userId") || resolveSessionUser(req as Request).userId;
+      const userId = (await resolveSessionUser(req as Request)).userId;
       const statusParam = url.searchParams.get("status");
       const tagParam = url.searchParams.get("tag");
       const paginationOpts = parsePaginationOptions({
@@ -81,9 +78,7 @@ export class TaskController {
 
   async getById(params: { taskId: string }, req?: Request) {
     try {
-      const userId = req
-        ? resolveSessionUser(req).userId
-        : (resolveSessionUser(new Request("http://localhost") as Request)).userId;
+      const userId = (await resolveSessionUser(req)).userId;
       const task = await service.getById(params.taskId, userId);
       return NextResponse.json(createSuccessResponse(task, "Task retrieved"));
     } catch (err: unknown) {
@@ -98,7 +93,7 @@ export class TaskController {
     try {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const body: Record<string, unknown> = await req.json();
-      const userId = resolveSessionUser(req as Request).userId;
+      const userId = (await resolveSessionUser(req as Request)).userId;
       const updated = await service.update(params.taskId, userId, {
         title: typeof body.title === "string" ? String(body.title) : undefined,
         tag:
@@ -117,12 +112,7 @@ export class TaskController {
 
   async start(params: { taskId: string }, req: Request) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const body: Record<string, unknown> = await req.json().catch(() => ({}));
-      const userId =
-        typeof body.userId === "string"
-          ? String(body.userId)
-          : resolveSessionUser(req as Request).userId;
+      const userId = (await resolveSessionUser(req as Request)).userId;
       const result = await service.start(params.taskId, userId);
       return NextResponse.json(createSuccessResponse(result, "Task started"));
     } catch (err: unknown) {
@@ -135,12 +125,7 @@ export class TaskController {
 
   async pause(params: { taskId: string }, req: Request) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const body: Record<string, unknown> = await req.json().catch(() => ({}));
-      const userId =
-        typeof body.userId === "string"
-          ? String(body.userId)
-          : resolveSessionUser(req as Request).userId;
+      const userId = (await resolveSessionUser(req as Request)).userId;
       const result = await service.pause(params.taskId, userId);
       return NextResponse.json(createSuccessResponse(result, "Task paused"));
     } catch (err: unknown) {
@@ -153,12 +138,7 @@ export class TaskController {
 
   async resume(params: { taskId: string }, req: Request) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const body: Record<string, unknown> = await req.json().catch(() => ({}));
-      const userId =
-        typeof body.userId === "string"
-          ? String(body.userId)
-          : resolveSessionUser(req as Request).userId;
+      const userId = (await resolveSessionUser(req as Request)).userId;
       const result = await service.resume(params.taskId, userId);
       return NextResponse.json(createSuccessResponse(result, "Task resumed"));
     } catch (err: unknown) {
@@ -171,12 +151,7 @@ export class TaskController {
 
   async complete(params: { taskId: string }, req: Request) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const body: Record<string, unknown> = await req.json().catch(() => ({}));
-      const userId =
-        typeof body.userId === "string"
-          ? String(body.userId)
-          : resolveSessionUser(req as Request).userId;
+      const userId = (await resolveSessionUser(req as Request)).userId;
       const result = await service.complete(params.taskId, userId);
       return NextResponse.json(createSuccessResponse(result, "Task completed"));
     } catch (err: unknown) {
@@ -189,9 +164,7 @@ export class TaskController {
 
   async getTimeLogs(params: { taskId: string }, req?: Request) {
     try {
-      const userId = req
-        ? resolveSessionUser(req).userId
-        : (resolveSessionUser(new Request("http://localhost") as Request)).userId;
+      const userId = (await resolveSessionUser(req)).userId;
       const logs = await service.getTimeLogs(params.taskId, userId);
       return NextResponse.json(createSuccessResponse(logs, "Time logs retrieved"));
     } catch (err: unknown) {
@@ -204,9 +177,7 @@ export class TaskController {
 
   async delete(params: { taskId: string }, req?: Request) {
     try {
-      const userId = req
-        ? resolveSessionUser(req).userId
-        : (resolveSessionUser(new Request("http://localhost") as Request)).userId;
+      const userId = (await resolveSessionUser(req)).userId;
       await service.delete(params.taskId, userId);
       return NextResponse.json(createSuccessResponse(null, "Task deleted"));
     } catch (err: unknown) {

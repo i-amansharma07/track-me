@@ -16,6 +16,23 @@ export type TaskSessionsProps = {
   taskId: string;
 }
 
+function formatDuration(totalSeconds: number): string {
+  const safe = Math.max(0, Math.floor(totalSeconds));
+  const hours = Math.floor(safe / 3600);
+  const minutes = Math.floor((safe % 3600) / 60);
+  const seconds = safe % 60;
+  return [hours, minutes, seconds].map((part) => String(part).padStart(2, '0')).join(':');
+}
+
+function formatClock(value: Date): string {
+  return value.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
+}
+
 export function TaskSessions({ taskId }: TaskSessionsProps) {
   const [logs, setLogs] = useState<TimeLogData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,35 +54,29 @@ export function TaskSessions({ taskId }: TaskSessionsProps) {
     return () => { cancelled = true; };
   }, [taskId]);
 
-  if (loading) return <div className={styles.loading}>Loading sessions...</div>;
-  if (logs.length === 0) return <div className={styles.empty}>No sessions yet.</div>;
+  if (loading || logs.length === 0) return null;
 
   return (
     <div className={styles.list}>
-      <h4 className={styles.title}>Session History</h4>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>Started</th>
-            <th>Ended</th>
-            <th>Duration</th>
-          </tr>
-        </thead>
-        <tbody>
-          {logs.map((log) => {
-            const started = new Date(log.startedAt);
-            const ended = log.endedAt ? new Date(log.endedAt) : null;
-            const durationSec = ended ? Math.floor((ended.getTime() - started.getTime()) / 1000) : null;
-            return (
-              <tr key={log.id}>
-                <td>{started.toLocaleString()}</td>
-                <td>{ended ? ended.toLocaleString() : 'Active'}</td>
-                <td>{durationSec !== null ? `${durationSec}s` : '-'}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <h4 className={styles.title}>Time Logs</h4>
+      <ol className={styles.logs}>
+        {logs.map((log, index) => {
+          const started = new Date(log.startedAt);
+          const ended = log.endedAt ? new Date(log.endedAt) : null;
+          const endMs = ended ? ended.getTime() : Date.now();
+          const durationSec = Math.floor((endMs - started.getTime()) / 1000);
+          return (
+            <li key={log.id} className={styles.row}>
+              <span className={styles.logLabel}>
+                log {index + 1} : {formatDuration(durationSec)}
+              </span>
+              <span className={styles.times}>
+                {formatClock(started)} - {ended ? formatClock(ended) : 'running'}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }

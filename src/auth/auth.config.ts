@@ -4,8 +4,21 @@ import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "@/db/prisma";
 import { env } from "@/config/env";
 
+type Adapter = ReturnType<typeof PrismaAdapter>;
+
+const adapter: Adapter = {
+  ...PrismaAdapter(prisma),
+  async getUserByAccount({ provider, providerAccountId }) {
+    const account = await prisma.account.findUnique({
+      where: { provider_providerAccountId: { provider, providerAccountId } },
+      include: { user: true },
+    });
+    return account?.user ?? null;
+  },
+};
+
 export const authConfig: AuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  adapter,
   providers: [
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID || "",
@@ -15,12 +28,12 @@ export const authConfig: AuthOptions = {
   session: { strategy: "database" },
   secret: env.AUTH_SECRET,
   pages: {
-    signIn: "/api/auth/signin",
+    signIn: "/login",
   },
   callbacks: {
-    async session({ session, user }) {
-      if (session.user && user && (user as any).id) {
-        (session.user as any).id = user.id;
+    session({ session, user }) {
+      if (session.user && user?.id) {
+        (session.user as { id?: string }).id = user.id;
       }
       return session;
     },

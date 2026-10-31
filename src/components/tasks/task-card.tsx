@@ -3,6 +3,7 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { TaskStatusBadge, TaskCategoryBadge } from './task-badges';
+import { TaskSessions } from './task-sessions';
 import { TaskData } from '@/lib/api';
 import styles from './task-card.module.css';
 
@@ -28,6 +29,7 @@ export function TaskCard({ task, onEdit, onDelete, onStart, onPause, onResume, o
         <TaskCategoryBadge tag={(task.tag as import('@/lib/api').TaskTag) || undefined} />
         <span className={styles.date}>Created {created}</span>
       </div>
+      <TaskSessions key={task.updatedAt} taskId={task.id} />
       <div className={styles.actions}>
         {task.status === 'pending' && (
           <Button variant="primary" size="sm" onClick={() => { if (onStart) onStart(task.id); }}>Start</Button>
