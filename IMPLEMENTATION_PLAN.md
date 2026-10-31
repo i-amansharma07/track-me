@@ -78,6 +78,11 @@
 
 - API.md or OpenAPI spec.
 
-## Phase 9: Production Readiness (PENDING)
+## Phase 9: Production Readiness (COMPLETE)
 
-- Production logging, environment checks, deployment notes.
+- Added health endpoint (`/api/health`)
+- Security audit completed: server-side session derivation, Zod env validation, Pino redaction, no secrets committed
+- Transaction/repository audit completed: repository passes `tx` through lifecycle operations
+- Database migration deployment process documented (`DB_SETUP.md`, `DEPLOYMENT.md`)
+- Production environment guide (`DEPLOYMENT.md`) and readiness report (`PRODUCTION_READINESS.md`) added
+- All structural checks pass; known gaps documented (rate limiting, security headers, live concurrency tests deferred)
