@@ -83,7 +83,7 @@ export class TaskController {
     try {
       const userId = req
         ? resolveSessionUser(req).userId
-        : resolveSessionUser(new Request("http://localhost") as Request).userId;
+        : (resolveSessionUser(new Request("http://localhost") as Request)).userId;
       const task = await service.getById(params.taskId, userId);
       return NextResponse.json(createSuccessResponse(task, "Task retrieved"));
     } catch (err: unknown) {
@@ -191,7 +191,7 @@ export class TaskController {
     try {
       const userId = req
         ? resolveSessionUser(req).userId
-        : resolveSessionUser(new Request("http://localhost") as Request).userId;
+        : (resolveSessionUser(new Request("http://localhost") as Request)).userId;
       const logs = await service.getTimeLogs(params.taskId, userId);
       return NextResponse.json(createSuccessResponse(logs, "Time logs retrieved"));
     } catch (err: unknown) {
@@ -206,7 +206,7 @@ export class TaskController {
     try {
       const userId = req
         ? resolveSessionUser(req).userId
-        : resolveSessionUser(new Request("http://localhost") as Request).userId;
+        : (resolveSessionUser(new Request("http://localhost") as Request)).userId;
       await service.delete(params.taskId, userId);
       return NextResponse.json(createSuccessResponse(null, "Task deleted"));
     } catch (err: unknown) {

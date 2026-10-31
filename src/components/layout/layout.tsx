@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { Sidebar } from './nav';
 import { Header } from './header';
 import { ActiveTaskDisplay } from '@/components/tasks/active-task';
@@ -11,13 +11,15 @@ export type AppLayoutProps = {
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
+  const [mobileOpen, setMobileOpen] = useState(false);
   return (
     <div className={styles.layout}>
-      <aside className={styles.aside} aria-label="Sidebar">
+      <aside className={`${styles.aside} ${mobileOpen ? styles.open : ''}`} aria-label="Sidebar">
         <Sidebar />
       </aside>
+      {mobileOpen && <div className={styles.overlay} onClick={() => setMobileOpen(false)} aria-hidden="true" />}
       <div className={styles.contentArea}>
-        <Header />
+        <Header mobileOpen={mobileOpen} onToggleMobile={() => setMobileOpen(!mobileOpen)} />
         <ActiveTaskDisplay />
         <main className={styles.main}>{children}</main>
       </div>

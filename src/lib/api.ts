@@ -80,8 +80,8 @@ export const api = {
       const s = new URLSearchParams();
       if (start) s.set('start', start);
       if (end) s.set('end', end);
-      return fetchJson<Array<{ date: string; totalTrackedSeconds: number; completedTasks: number; workSessions: number }>>(`${BASE}/dashboard/daily?${s.toString()}`);
+      return fetchJson<{ date: string; totalTrackedSeconds: number; completedTasks: number; workSessions: number }[]>(`${BASE}/dashboard/daily?${s.toString()}`);
     },
-    categories: () => fetchJson<Array<{ tag: string; totalTrackedSeconds: number }>>(`${BASE}/dashboard/categories`),
+    categories: () => fetchJson<{ tag: string; totalTrackedSeconds: number }[]>(`${BASE}/dashboard/categories`),
   },
 };

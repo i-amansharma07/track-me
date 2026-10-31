@@ -1,10 +1,16 @@
 'use client';
 
+import { useState } from 'react';
 import { signOut, useSession } from 'next-auth/react';
 import { Dropdown } from '@/components/ui/dropdown';
 import styles from './header.module.css';
 
-export function Header() {
+export type HeaderProps = {
+  mobileOpen?: boolean;
+  onToggleMobile?: () => void;
+}
+
+export function Header({ mobileOpen = false, onToggleMobile }: HeaderProps) {
   const { data: session } = useSession();
   const user = session?.user;
 
@@ -12,6 +18,9 @@ export function Header() {
     <header className={styles.header}>
       <div className={styles.brand}>Track Me</div>
       <div className={styles.right}>
+        <button className={styles.mobileToggle} onClick={onToggleMobile} aria-label="Toggle navigation" aria-expanded={mobileOpen}>
+          <span className={styles.hamburger} aria-hidden="true" />
+        </button>
         {user && (
           <Dropdown
             align="right"

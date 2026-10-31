@@ -42,10 +42,10 @@ export default function TasksPage() {
   }, [status, filters, page]);
 
   useEffect(() => {
-    if (status === 'authenticated' && tasks.length === 0 && !loading && !error) {
+    if (status === 'authenticated') {
       void fetchTasks();
     }
-  }, [status, tasks.length, loading, error]);
+  }, [status, filters, page, fetchTasks]);
 
   const handleCreate = async (data: { title: string; tag?: TaskTag }) => {
     setSubmitting(true);
