@@ -31,3 +31,5 @@ Route Handler → Controller → Service → Repository → Prisma → PostgreSQ
 - No business logic in route handlers; no database queries in controllers.
 - Services are independent of Next.js request/response objects.
 - Database-level partial unique indexes enforce single active task and single open time log.
+- Schema uses UUIDs for Task and TaskTimeLog; Auth.js-compatible User IDs.
+- Custom SQL migration for partial unique indexes and title check constraint.
