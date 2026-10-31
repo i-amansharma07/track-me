@@ -1,0 +1,57 @@
+# Implementation Plan
+
+## Phase 0: Project Foundation and Architecture (COMPLETE)
+
+- Established folder structure matching specification.
+- Configured strict TypeScript with absolute imports.
+- Added Zod environment validation (`src/config/env.ts`).
+- Added Prisma client singleton (`src/db/prisma.ts`).
+- Added Pino structured logging (`src/shared/logger/logger.ts`).
+- Added Vitest (`vitest.config.ts`), ESLint (`.eslintrc.json`), and Prettier (`.prettierrc`).
+- Added `ARCHITECTURE.md`, `.env.example`, `AGENTS.md` preserved.
+- No database models or migrations configured yet.
+- No authentication, task APIs, time tracking, or frontend UI implemented.
+
+## Phase 1: Database Design and Prisma Setup (PENDING)
+
+- Define Prisma schema with User, Account, Session, VerificationToken, Task, TaskTimeLog.
+- Implement partial unique indexes (`Task.userId` where `status = active`; `TaskTimeLog.taskId` where `endedAt IS NULL`).
+- Create initial migration.
+
+## Phase 2: Authentication and Authorization (PENDING)
+
+- Configure Auth.js with Google OAuth.
+- Implement session resolution and protected route middleware.
+
+## Phase 3: Core Backend Infrastructure (PENDING)
+
+- Centralized AppError, HTTP response helpers.
+- Database transaction utilities.
+
+## Phase 4: Task Management Module (PENDING)
+
+- Task repository, service, controller, schema.
+- CRUD endpoints.
+
+## Phase 5: Task Lifecycle and Time Tracking (PENDING)
+
+- Lifecycle endpoints (start, pause, resume, complete).
+- Transactional service operations with row locking.
+- Time-log creation and closure.
+
+## Phase 6: Productivity Queries and Summaries (PENDING)
+
+- Dashboard analytics endpoints.
+
+## Phase 7: Comprehensive Testing and Concurrency Verification (PENDING)
+
+- Unit and integration tests.
+- Concurrent lifecycle operation tests.
+
+## Phase 8: API Documentation and Frontend Contract (PENDING)
+
+- API.md or OpenAPI spec.
+
+## Phase 9: Production Readiness (PENDING)
+
+- Production logging, environment checks, deployment notes.
