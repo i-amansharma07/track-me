@@ -74,4 +74,14 @@ export const api = {
     complete: (taskId: string) => fetchJson<TaskData>(`${BASE}/tasks/${taskId}/complete`, { method: 'POST' }),
     timeLogs: (taskId: string) => fetchJson<{ id: string; taskId: string; startedAt: string; endedAt: string | null; createdAt: string }[]>(`${BASE}/tasks/${taskId}/timelogs`),
   },
+  analytics: {
+    summary: () => fetchJson<{ totalTasks: number; pendingTasks: number; activeTasks: number; pausedTasks: number; completedTasks: number; totalTrackedSeconds: number }>(`${BASE}/dashboard/summary`),
+    daily: (start?: string, end?: string) => {
+      const s = new URLSearchParams();
+      if (start) s.set('start', start);
+      if (end) s.set('end', end);
+      return fetchJson<Array<{ date: string; totalTrackedSeconds: number; completedTasks: number; workSessions: number }>>(`${BASE}/dashboard/daily?${s.toString()}`);
+    },
+    categories: () => fetchJson<Array<{ tag: string; totalTrackedSeconds: number }>>(`${BASE}/dashboard/categories`),
+  },
 };
