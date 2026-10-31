@@ -77,4 +77,29 @@ export class TaskRepository {
       where: { userId, status: "active" },
     });
   }
+
+  async findTaskForUpdate(id: string, userId: string) {
+    return prisma.task.findFirst({
+      where: { id, userId },
+    });
+  }
+
+  async findOpenTimeLog(taskId: string) {
+    return prisma.taskTimeLog.findFirst({
+      where: { taskId, endedAt: null },
+    });
+  }
+
+  async createTimeLog(taskId: string) {
+    return prisma.taskTimeLog.create({
+      data: { taskId },
+    });
+  }
+
+  async closeTimeLog(logId: string) {
+    return prisma.taskTimeLog.update({
+      where: { id: logId },
+      data: { endedAt: new Date() },
+    });
+  }
 }

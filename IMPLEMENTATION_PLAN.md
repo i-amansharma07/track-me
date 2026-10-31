@@ -48,11 +48,15 @@
 - Tests added for module behavior
 - CRUD endpoints.
 
-## Phase 5: Task Lifecycle and Time Tracking (PENDING)
+## Phase 5: Task Lifecycle and Time Tracking (COMPLETE)
 
-- Lifecycle endpoints (start, pause, resume, complete).
-- Transactional service operations with row locking.
-- Time-log creation and closure.
+- Lifecycle endpoints: start, pause, resume, complete
+- Transactional service operations with `SELECT FOR UPDATE` and interactive Prisma transactions
+- Time-log creation/closure rules enforced
+- Active task conflict checks; open log consistency checks
+- Time tracking calculations from server timestamps
+- Routes implemented; controllers/services/repositories extended
+- Build and all checks pass; DB-level concurrency verification deferred
 
 ## Phase 6: Productivity Queries and Summaries (PENDING)
 
