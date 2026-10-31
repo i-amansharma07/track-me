@@ -37,9 +37,15 @@
 - TypeScript conventions documented.
 - Unit tests added for errors, validation, responses, pagination, logging.
 
-## Phase 4: Task Management Module (PENDING)
+## Phase 4: Task Management Module (COMPLETE)
 
-- Task repository, service, controller, schema.
+- Implemented endpoints: POST /api/tasks, GET /api/tasks, GET /api/tasks/:taskId, PATCH /api/tasks/:taskId, DELETE /api/tasks/:taskId
+- Controller, Service, Repository, Schema, Types completed
+- CRUD operations with pagination, filtering, ownership scoping
+- Validation (Zod), error handling (AppError), response formats (success/error/pagination)
+- Active task deletion rejected (409); cascade handled by DB constraints
+- Status mutation rejected through generic PATCH
+- Tests added for module behavior
 - CRUD endpoints.
 
 ## Phase 5: Task Lifecycle and Time Tracking (PENDING)

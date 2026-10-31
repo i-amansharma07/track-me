@@ -1,3 +1,123 @@
+import { NextRequest, NextResponse } from "next/server";
+import { TaskService } from "./task.service";
+import { TaskRepository } from "./task.repository";
+import { validateWithSchema } from "@/shared/validation";
+import { createTaskSchema } from "./task.schema";
+import { AppErrorCode } from "@/shared/errors/app.error";
+import {
+  createSuccessResponse,
+  createErrorResponse,
+  createSuccessResponseWithPagination,
+} from "@/shared/http/response";
+import { parsePaginationOptions, buildPaginationMeta } from "@/shared/http/pagination";
+import { TaskStatus, TaskTag } from "./task.types";
+
+const repo = new TaskRepository();
+const service = new TaskService(repo);
+
+function extractErrorInfo(err: unknown): { message: string; code: string; statusCode: number } {
+  if (err instanceof Error) {
+    const customErr = err instanceof Error ? (err as unknown as Record<string, unknown>) : {};
+    return {
+      message: err.message || "Something went wrong",
+      code: typeof customErr.code === "string" ? customErr.code : AppErrorCode.INTERNAL_ERROR,
+      statusCode: typeof customErr.statusCode === "number" ? customErr.statusCode : 500,
+    };
+  }
+  return { message: "Something went wrong", code: AppErrorCode.INTERNAL_ERROR, statusCode: 500 };
+}
+
 export class TaskController {
-  // HTTP coordination will be implemented in Phase 4
+  async create(req: Request) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const body: Record<string, unknown> = await req.json();
+      const validated = validateWithSchema(createTaskSchema, { title: body.title, tag: body.tag });
+      const userId = typeof body.userId === "string" ? String(body.userId) : "placeholder-user-id";
+      const task = await service.create({ ...validated, userId });
+      return NextResponse.json(createSuccessResponse(task, "Task created"), { status: 201 });
+    } catch (err: unknown) {
+      const info = extractErrorInfo(err);
+      return NextResponse.json(createErrorResponse(info.message, info.code), {
+        status: info.statusCode,
+      });
+    }
+  }
+
+  async list(req: NextRequest) {
+    try {
+      const url = new URL(req.url);
+      const userId = url.searchParams.get("userId") || "placeholder-user-id";
+      const statusParam = url.searchParams.get("status");
+      const tagParam = url.searchParams.get("tag");
+      const paginationOpts = parsePaginationOptions({
+        page: url.searchParams.get("page") ? Number(url.searchParams.get("page")) : undefined,
+        limit: url.searchParams.get("limit") ? Number(url.searchParams.get("limit")) : undefined,
+      });
+      const filters = {
+        status: (statusParam as TaskStatus) || undefined,
+        tag: (tagParam as TaskTag) || undefined,
+        page: paginationOpts.page,
+        limit: paginationOpts.limit,
+      };
+      const result = await service.list(userId, filters);
+      const paginated = {
+        data: result.items,
+        pagination: buildPaginationMeta(paginationOpts.page, paginationOpts.limit, result.total),
+      };
+      return NextResponse.json(createSuccessResponseWithPagination(paginated, "Tasks retrieved"));
+    } catch (err: unknown) {
+      const info = extractErrorInfo(err);
+      return NextResponse.json(createErrorResponse(info.message, info.code), {
+        status: info.statusCode,
+      });
+    }
+  }
+
+  async getById(params: { taskId: string }) {
+    try {
+      const userId = "placeholder-user-id";
+      const task = await service.getById(params.taskId, userId);
+      return NextResponse.json(createSuccessResponse(task, "Task retrieved"));
+    } catch (err: unknown) {
+      const info = extractErrorInfo(err);
+      return NextResponse.json(createErrorResponse(info.message, info.code), {
+        status: info.statusCode,
+      });
+    }
+  }
+
+  async update(params: { taskId: string }, req: Request) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const body: Record<string, unknown> = await req.json();
+      const userId = "placeholder-user-id";
+      const updated = await service.update(params.taskId, userId, {
+        title: typeof body.title === "string" ? String(body.title) : undefined,
+        tag:
+          typeof body.tag === "string"
+            ? (String(body.tag) as import("./task.types").TaskTag)
+            : undefined,
+      });
+      return NextResponse.json(createSuccessResponse(updated, "Task updated"));
+    } catch (err: unknown) {
+      const info = extractErrorInfo(err);
+      return NextResponse.json(createErrorResponse(info.message, info.code), {
+        status: info.statusCode,
+      });
+    }
+  }
+
+  async delete(params: { taskId: string }) {
+    try {
+      const userId = "placeholder-user-id";
+      await service.delete(params.taskId, userId);
+      return NextResponse.json(createSuccessResponse(null, "Task deleted"));
+    } catch (err: unknown) {
+      const info = extractErrorInfo(err);
+      return NextResponse.json(createErrorResponse(info.message, info.code), {
+        status: info.statusCode,
+      });
+    }
+  }
 }
