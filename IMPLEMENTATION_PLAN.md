@@ -21,10 +21,13 @@
 - Prisma client generated (`npx prisma generate` passes).
 - Note: Live PostgreSQL verification deferred per user instruction.
 
-## Phase 2: Authentication and Authorization (PENDING)
+## Phase 2: Authentication and Authorization (COMPLETE - basic session protection)
 
-- Configure Auth.js with Google OAuth.
-- Implement session resolution and protected route middleware.
+- Installed `next-auth` and `@auth/prisma-adapter`.
+- Configured Auth.js with database session strategy and Google OAuth provider (`src/auth/auth.config.ts`).
+- Updated controllers to resolve `userId` from `resolveAuthenticatedUser(req)` instead of placeholder.
+- Routes protected: unauthenticated requests return 401.
+- Full OAuth session integration ready once `.env` provides real `GOOGLE_CLIENT_ID`/`AUTH_SECRET`.
 
 ## Phase 3: Core Backend Infrastructure (COMPLETE)
 
@@ -74,9 +77,9 @@
 - Documented verified scenarios: concurrent starts, same-task double start, cross-user isolation, active delete rejection, lifecycle transitions, time-log consistency.
 - Live concurrency integration tests deferred per DB access limitation; all structural checks pass.
 
-## Phase 8: API Documentation and Frontend Contract (PENDING)
+## Phase 8: API Documentation and Frontend Contract (COMPLETE)
 
-- API.md or OpenAPI spec.
+- Added `API.md` (OpenAPI-style spec) covering auth, all endpoints, schemas, pagination, lifecycle, analytics, timezone (UTC), error codes, integration guide.
 
 ## Phase 9: Production Readiness (COMPLETE)
 

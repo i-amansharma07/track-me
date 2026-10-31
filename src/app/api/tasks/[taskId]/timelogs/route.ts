@@ -4,5 +4,5 @@ const controller = new TaskController();
 
 export async function GET(req: Request, context: { params: Promise<{ taskId: string }> }) {
   const params = await context.params;
-  return controller.getTimeLogs(params);
+  return controller.getTimeLogs(params, req);
 }
