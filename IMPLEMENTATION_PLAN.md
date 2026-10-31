@@ -58,9 +58,13 @@
 - Routes implemented; controllers/services/repositories extended
 - Build and all checks pass; DB-level concurrency verification deferred
 
-## Phase 6: Productivity Queries and Summaries (PENDING)
+## Phase 6: Productivity Analytics (COMPLETE)
 
-- Dashboard analytics endpoints.
+- Endpoints: `/api/dashboard/summary`, `/api/dashboard/daily`, `/api/dashboard/categories`
+- Analytics service with summary (counts + tracked seconds), daily (date ranges), categories (tag grouping)
+- User isolation, active session duration included, UTC timezone documented
+- No N+1 patterns; uses existing task/time-log definitions
+- Basic tests added; build and checks pass
 
 ## Phase 7: Comprehensive Testing and Concurrency Verification (PENDING)
 
