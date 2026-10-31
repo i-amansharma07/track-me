@@ -1,0 +1,11 @@
+.timer {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.digits {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}

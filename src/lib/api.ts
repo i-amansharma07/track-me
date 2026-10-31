@@ -68,5 +68,10 @@ export const api = {
     update: (taskId: string, body: { title?: string; tag?: TaskTag }) =>
       fetchJson<TaskData>(`${BASE}/tasks/${taskId}`, { method: 'PATCH', body: JSON.stringify(body) }),
     delete: (taskId: string) => fetchJson<null>(`${BASE}/tasks/${taskId}`, { method: 'DELETE' }),
+    start: (taskId: string) => fetchJson<TaskData>(`${BASE}/tasks/${taskId}/start`, { method: 'POST' }),
+    pause: (taskId: string) => fetchJson<TaskData>(`${BASE}/tasks/${taskId}/pause`, { method: 'POST' }),
+    resume: (taskId: string) => fetchJson<TaskData>(`${BASE}/tasks/${taskId}/resume`, { method: 'POST' }),
+    complete: (taskId: string) => fetchJson<TaskData>(`${BASE}/tasks/${taskId}/complete`, { method: 'POST' }),
+    timeLogs: (taskId: string) => fetchJson<{ id: string; taskId: string; startedAt: string; endedAt: string | null; createdAt: string }[]>(`${BASE}/tasks/${taskId}/timelogs`),
   },
 };

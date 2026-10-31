@@ -78,6 +78,22 @@ export default function TasksPage() {
     }
   };
 
+  const handleLifecycle = async (action: 'start' | 'pause' | 'resume' | 'complete', id: string) => {
+    setSubmitting(true);
+    try {
+      if (action === 'start') await api.tasks.start(id);
+      if (action === 'pause') await api.tasks.pause(id);
+      if (action === 'resume') await api.tasks.resume(id);
+      if (action === 'complete') await api.tasks.complete(id);
+      await fetchTasks();
+      setToast({ open: true, message: `Task ${action === 'start' ? 'started' : action === 'pause' ? 'paused' : action === 'resume' ? 'resumed' : 'completed'}`, variant: 'success' });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Failed';
+      setToast({ open: true, message: msg, variant: 'error' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
@@ -103,6 +119,10 @@ export default function TasksPage() {
           tasks={tasks}
           onEdit={setEditingTask}
           onDelete={(id) => setDeleteTarget(id)}
+          onStart={(id) => { void handleLifecycle('start', id); }}
+          onPause={(id) => { void handleLifecycle('pause', id); }}
+          onResume={(id) => { void handleLifecycle('resume', id); }}
+          onComplete={(id) => { void handleLifecycle('complete', id); }}
           isLoading={loading}
           error={error}
           onRetry={() => { void fetchTasks(); }}
