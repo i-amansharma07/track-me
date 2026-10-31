@@ -1,0 +1,17 @@
+'use client';
+
+import { type ReactNode } from 'react';
+import styles from './badge.module.css';
+
+type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'error';
+
+export type BadgeProps = {
+  children: ReactNode;
+  variant?: BadgeVariant;
+  className?: string;
+}
+
+export function Badge({ children, variant = 'default', className = '' }: BadgeProps) {
+  const variantClass = styles[variant] || styles.default;
+  return <span className={`${styles.badge} ${variantClass} ${className}`.trim()}>{children}</span>;
+}

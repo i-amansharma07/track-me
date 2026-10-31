@@ -291,14 +291,14 @@ Response (200):
 
 Valid transitions:
 
-| Current status | Action   | New status  |
-| -------------- | -------- | ----------- |
-| `pending`      | start    | `active`    |
-| `pending`      | complete | `completed` |
-| `active`       | pause    | `pause`     |
-| `active`       | complete | `completed` |
-| `pause`        | resume   | `active`    |
-| `pause`        | complete | `completed` |
+| Current status | Action   | New status    |
+| -------------- | -------- | ------------- |
+| `pending`    | start    | `active`    |
+| `pending`    | complete | `completed` |
+| `active`     | pause    | `pause`     |
+| `active`     | complete | `completed` |
+| `pause`      | resume   | `active`    |
+| `pause`      | complete | `completed` |
 
 Invalid transitions return 409 (`BUSINESS_CONFLICT`).
 
