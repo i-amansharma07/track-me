@@ -3,10 +3,6 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { api, TaskData } from "@/lib/api";
-import { Timer } from "./timer";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { TaskStatusBadge, TaskCategoryBadge } from "./task-badges";
 import styles from "./active-task.module.css";
 
 export function ActiveTaskDisplay() {
@@ -38,14 +34,33 @@ export function ActiveTaskDisplay() {
 
   useEffect(() => {
     void fetchActive();
-    // const interval = setInterval(() => { void fetchActive(); }, 15000);
-    // return () => clearInterval(interval);
   }, [status]);
+
+  const [elapsed, setElapsed] = useState(0);
+
+  const openLog = activeTask ? timeLogs.find((l) => l.endedAt === null) : undefined;
+  const startedAt = openLog ? openLog.startedAt : null;
+
+  useEffect(() => {
+    if (!startedAt) {
+      setElapsed(0);
+      return;
+    }
+    const start = new Date(startedAt).getTime();
+    const tick = () => {
+      setElapsed(Math.floor((Date.now() - start) / 1000));
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [startedAt]);
 
   if (loading || !activeTask) return null;
 
-  const openLog = timeLogs.find((l) => l.endedAt === null);
-  const startedAt = openLog ? openLog.startedAt : null;
+  const hours = Math.floor(elapsed / 3600);
+  const minutes = Math.floor((elapsed % 3600) / 60);
+  const seconds = elapsed % 60;
+  const timerText = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 
   const handlePause = async () => {
     try {
@@ -68,37 +83,51 @@ export function ActiveTaskDisplay() {
   };
 
   return (
-    <Card variant="elevated" className={styles.container}>
-      <div className={styles.headerRow}>
-        <div>
-          <h3 className={styles.title}>{activeTask.title}</h3>
-          <div className={styles.tags}>
-            <TaskStatusBadge status={activeTask.status} />
-            <TaskCategoryBadge tag={(activeTask.tag as import("@/lib/api").TaskTag) || undefined} />
+    <div className={styles.container}>
+      <div className={styles.capsule}>
+        <div className={styles.gloss} />
+
+        <div className={styles.topRow}>
+          <div>
+            <h3 className={styles.title}>{activeTask.title}</h3>
           </div>
+          <div className={styles.timer}>{timerText}</div>
         </div>
-        <Timer startedAt={startedAt} />
+
+        <div className={styles.badgesRow}>
+          <span className={styles.activeBadge}>Active</span>
+          {activeTask.tag && <span className={styles.tagBadge}>{activeTask.tag}</span>}
+        </div>
+
+        <div className={styles.pillContainer}>
+          <button
+            type="button"
+            className={styles.pauseBtn}
+            onClick={() => {
+              void handlePause();
+            }}
+            disabled={loading}
+          >
+            <span className={styles.icon} aria-hidden="true">
+              ⏸
+            </span>
+            Pause
+          </button>
+          <button
+            type="button"
+            className={styles.completeBtn}
+            onClick={() => {
+              void handleComplete();
+            }}
+            disabled={loading}
+          >
+            <span className={styles.icon} aria-hidden="true">
+              ✓
+            </span>
+            Complete
+          </button>
+        </div>
       </div>
-      <div className={styles.actions}>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            void handlePause();
-          }}
-        >
-          Pause
-        </Button>
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => {
-            void handleComplete();
-          }}
-        >
-          Complete
-        </Button>
-      </div>
-    </Card>
+    </div>
   );
 }
