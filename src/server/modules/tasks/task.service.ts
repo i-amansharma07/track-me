@@ -24,7 +24,29 @@ export class TaskService {
   }
 
   async list(userId: string, filters: ListTasksFilters) {
-    return this.repo.list(userId, filters);
+    const result = await this.repo.list(userId, filters);
+    const items = result.items.map((task: any) => {
+      const { timeLogs, ...rest } = task;
+      const logs = (timeLogs || []).map((log: any) => ({
+        id: log.id,
+        startedAt: log.startedAt.toISOString(),
+        endedAt: log.endedAt ? log.endedAt.toISOString() : null,
+      }));
+      const durations = logs.map((log: { startedAt: string; endedAt: string | null }) => {
+        const started = new Date(log.startedAt).getTime();
+        const ended = log.endedAt ? new Date(log.endedAt).getTime() : Date.now();
+        return Math.max(0, Math.floor((ended - started) / 1000));
+      });
+      const totalDurationSeconds = durations.reduce((a: number, b: number) => a + b, 0);
+      const longestDurationSeconds = durations.length > 0 ? Math.max(...durations) : 0;
+      return {
+        ...rest,
+        logs,
+        totalDurationSeconds,
+        longestDurationSeconds,
+      };
+    });
+    return { items, total: result.total };
   }
 
   async getById(id: string, userId: string) {

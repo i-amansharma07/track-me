@@ -13,12 +13,13 @@ export type TaskListProps = {
   onPause?: (taskId: string) => void;
   onResume?: (taskId: string) => void;
   onComplete?: (taskId: string) => void;
+  onMenuClick?: (taskId: string) => void;
   isLoading?: boolean;
   error?: string | null;
   onRetry?: () => void;
 }
 
-export function TaskList({ tasks, onEdit, onDelete, onStart, onPause, onResume, onComplete, isLoading, error, onRetry }: TaskListProps) {
+export function TaskList({ tasks, onStart, onPause, onResume, onComplete, onMenuClick, isLoading, error, onRetry }: TaskListProps) {
   if (isLoading) {
     return (
       <div className={styles.loading}>
@@ -45,7 +46,15 @@ export function TaskList({ tasks, onEdit, onDelete, onStart, onPause, onResume, 
   return (
     <div className={styles.grid}>
       {tasks.map((task) => (
-        <TaskCard key={task.id} task={task} onEdit={onEdit} onDelete={onDelete} onStart={onStart} onPause={onPause} onResume={onResume} onComplete={onComplete} />
+        <TaskCard
+          key={task.id}
+          task={task}
+          onStart={() => onStart?.(task.id)}
+          onPause={() => onPause?.(task.id)}
+          onResume={() => onResume?.(task.id)}
+          onComplete={() => onComplete?.(task.id)}
+          onMenuClick={() => onMenuClick?.(task.id)}
+        />
       ))}
     </div>
   );

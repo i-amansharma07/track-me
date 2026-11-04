@@ -60,6 +60,11 @@ export class TaskRepository {
         orderBy: [{ userId: "asc" }, { createdAt: "asc" }, { id: "asc" }],
         skip,
         take: limit,
+        include: {
+          timeLogs: {
+            orderBy: { startedAt: "asc" },
+          },
+        },
       }),
       client.task.count({ where }),
     ]);

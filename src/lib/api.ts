@@ -22,6 +22,9 @@ export type TaskData = {
   createdAt: string;
   updatedAt: string;
   completedAt: string | null;
+  logs?: { id: string; startedAt: string; endedAt: string | null }[];
+  totalDurationSeconds?: number;
+  longestDurationSeconds?: number;
 }
 
 export type PaginatedTasks = {
