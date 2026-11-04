@@ -89,7 +89,11 @@ export function ActiveTaskDisplay() {
 
         <div className={styles.topRow}>
           <div>
-            <h3 className={styles.title}>{activeTask.title}</h3>
+            <h3 className={styles.title}>
+              {activeTask.title.length > 15
+                ? activeTask.title.slice(0, 15) + "..."
+                : activeTask.title}
+            </h3>
           </div>
           <div className={styles.timer}>{timerText}</div>
         </div>
