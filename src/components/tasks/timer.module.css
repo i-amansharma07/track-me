@@ -4,7 +4,7 @@
 }
 
 .digits {
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--color-text-primary);

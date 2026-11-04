@@ -26,6 +26,7 @@
 }
 
 .value {
+  font-family: var(--font-mono);
   font-size: var(--font-size-2xl);
   font-weight: 800;
   color: var(--color-text-primary);
