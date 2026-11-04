@@ -143,9 +143,6 @@ export default function TasksPage() {
           onComplete={(id) => {
             void handleLifecycle("complete", id);
           }}
-          onMenuClick={(id) => {
-            void handleLifecycle("start", id);
-          }}
           isLoading={loading}
           error={error}
           onRetry={() => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Dropdown } from "@/components/ui/dropdown";
 import { TaskData } from "@/lib/api";
 import { formatDate } from "@/lib/date";
 import styles from "./task-card.module.css";
@@ -17,7 +18,8 @@ type TaskCardProps = {
   onComplete?: () => void;
   onStart?: () => void;
   onPause?: () => void;
-  onMenuClick?: () => void;
+  onEdit?: (task: TaskData) => void;
+  onDelete?: (taskId: string) => void;
 };
 
 function formatDuration(seconds: number): string {
@@ -39,7 +41,8 @@ export function TaskCard({
   onComplete,
   onStart,
   onPause,
-  onMenuClick,
+  onEdit,
+  onDelete,
 }: TaskCardProps) {
   const [expanded, setExpanded] = useState(false);
   const logs: Log[] = task.logs || [];
@@ -115,23 +118,43 @@ export function TaskCard({
             <span className={`${styles.statusDot} ${statusDot}`} aria-hidden="true"></span>
             {statusLabel} · {task.tag || "Study"}
           </span>
-          <button
-            type="button"
-            aria-label="More options"
-            className={styles.kebabBtn}
-            onClick={onMenuClick}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className={styles.kebabIcon}
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="5" r="2" />
-              <circle cx="12" cy="12" r="2" />
-              <circle cx="12" cy="19" r="2" />
-            </svg>
-          </button>
+          <Dropdown
+            align="right"
+            trigger={
+              <button
+                type="button"
+                aria-label="More options"
+                className={styles.kebabBtn}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className={styles.kebabIcon}
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="5" r="2" />
+                  <circle cx="12" cy="12" r="2" />
+                  <circle cx="12" cy="19" r="2" />
+                </svg>
+              </button>
+            }
+            options={[
+              {
+                label: "Edit",
+                value: "edit",
+                onClick: () => {
+                  if (onEdit) onEdit(task);
+                },
+              },
+              {
+                label: "Delete",
+                value: "delete",
+                onClick: () => {
+                  if (onDelete) onDelete(task.id);
+                },
+              },
+            ]}
+          />
         </div>
         <h2 className={styles.title}>{task.title}</h2>
         <p className={styles.metaLine}>
