@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { api, TaskData } from '@/lib/api';
-import { Timer } from './timer';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { TaskStatusBadge, TaskCategoryBadge } from './task-badges';
-import styles from './active-task.module.css';
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { api, TaskData } from "@/lib/api";
+import { Timer } from "./timer";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { TaskStatusBadge, TaskCategoryBadge } from "./task-badges";
+import styles from "./active-task.module.css";
 
 export function ActiveTaskDisplay() {
   const { status } = useSession();
@@ -16,10 +16,10 @@ export function ActiveTaskDisplay() {
   const [loading, setLoading] = useState(false);
 
   const fetchActive = async () => {
-    if (status !== 'authenticated') return;
+    if (status !== "authenticated") return;
     setLoading(true);
     try {
-      const res = await api.tasks.list({ status: 'active', limit: 1 });
+      const res = await api.tasks.list({ status: "active", limit: 1 });
       const task = res.data?.[0] || null;
       setActiveTask(task);
       if (task) {
@@ -38,8 +38,8 @@ export function ActiveTaskDisplay() {
 
   useEffect(() => {
     void fetchActive();
-    const interval = setInterval(() => { void fetchActive(); }, 15000);
-    return () => clearInterval(interval);
+    // const interval = setInterval(() => { void fetchActive(); }, 15000);
+    // return () => clearInterval(interval);
   }, [status]);
 
   if (loading || !activeTask) return null;
@@ -52,7 +52,7 @@ export function ActiveTaskDisplay() {
       await api.tasks.pause(activeTask.id);
       await fetchActive();
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Failed to pause';
+      const msg = e instanceof Error ? e.message : "Failed to pause";
       alert(msg);
     }
   };
@@ -62,7 +62,7 @@ export function ActiveTaskDisplay() {
       await api.tasks.complete(activeTask.id);
       await fetchActive();
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Failed to complete';
+      const msg = e instanceof Error ? e.message : "Failed to complete";
       alert(msg);
     }
   };
@@ -74,14 +74,30 @@ export function ActiveTaskDisplay() {
           <h3 className={styles.title}>{activeTask.title}</h3>
           <div className={styles.tags}>
             <TaskStatusBadge status={activeTask.status} />
-            <TaskCategoryBadge tag={(activeTask.tag as import('@/lib/api').TaskTag) || undefined} />
+            <TaskCategoryBadge tag={(activeTask.tag as import("@/lib/api").TaskTag) || undefined} />
           </div>
         </div>
         <Timer startedAt={startedAt} />
       </div>
       <div className={styles.actions}>
-        <Button variant="outline" size="sm" onClick={() => { void handlePause(); }}>Pause</Button>
-        <Button variant="primary" size="sm" onClick={() => { void handleComplete(); }}>Complete</Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            void handlePause();
+          }}
+        >
+          Pause
+        </Button>
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={() => {
+            void handleComplete();
+          }}
+        >
+          Complete
+        </Button>
       </div>
     </Card>
   );

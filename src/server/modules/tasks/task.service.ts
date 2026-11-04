@@ -14,6 +14,10 @@ import { prisma } from "@/db/prisma";
 export class TaskService {
   constructor(private repo: TaskRepository) {}
 
+  private runTransaction<T>(fn: (tx: any) => Promise<T>): Promise<T> {
+    return prisma.$transaction(fn, { maxWait: 10_000, timeout: 20_000 });
+  }
+
   async create(input: CreateTaskInput) {
     const validated = validateWithSchema(createTaskSchema, input);
     return this.repo.create({ ...validated, userId: input.userId });
@@ -59,7 +63,7 @@ export class TaskService {
   }
 
   async start(taskId: string, userId: string) {
-    return prisma.$transaction(async (tx) => {
+    return this.runTransaction(async (tx) => {
       await tx.$executeRaw`SELECT * FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
       const task = await this.repo.findById(taskId, userId, tx);
       if (!task) {
@@ -85,7 +89,7 @@ export class TaskService {
   }
 
   async pause(taskId: string, userId: string) {
-    return prisma.$transaction(async (tx) => {
+    return this.runTransaction(async (tx) => {
       await tx.$executeRaw`SELECT * FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
       const task = await this.repo.findById(taskId, userId, tx);
       if (!task) {
@@ -107,7 +111,7 @@ export class TaskService {
   }
 
   async resume(taskId: string, userId: string) {
-    return prisma.$transaction(async (tx) => {
+    return this.runTransaction(async (tx) => {
       await tx.$executeRaw`SELECT * FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
       const task = await this.repo.findById(taskId, userId, tx);
       if (!task) {
@@ -129,7 +133,7 @@ export class TaskService {
   }
 
   async complete(taskId: string, userId: string) {
-    return prisma.$transaction(async (tx) => {
+    return this.runTransaction(async (tx) => {
       await tx.$executeRaw`SELECT * FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
       const task = await this.repo.findById(taskId, userId, tx);
       if (!task) {

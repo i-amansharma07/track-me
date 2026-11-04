@@ -31,9 +31,9 @@ function BarChart3Icon({ size = 20 }: { size?: number }) {
 }
 
 const links = [
-  { href: '/dashboard', label: 'Dashboard', icon: HomeIcon },
+  // { href: '/dashboard', label: 'Dashboard', icon: HomeIcon },
   { href: '/tasks', label: 'Tasks', icon: CheckSquareIcon },
-  { href: '/analytics', label: 'Analytics', icon: BarChart3Icon },
+  // { href: '/analytics', label: 'Analytics', icon: BarChart3Icon },
 ];
 
 export function Sidebar() {

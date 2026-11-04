@@ -15,9 +15,10 @@ export type TaskCardProps = {
   onPause?: (taskId: string) => void;
   onResume?: (taskId: string) => void;
   onComplete?: (taskId: string) => void;
+  isBusy?: boolean;
 }
 
-export function TaskCard({ task, onEdit, onDelete, onStart, onPause, onResume, onComplete }: TaskCardProps) {
+export function TaskCard({ task, onEdit, onDelete, onStart, onPause, onResume, onComplete, isBusy = false }: TaskCardProps) {
   const created = new Date(task.createdAt).toLocaleDateString();
   return (
     <Card variant="elevated" className={styles.card}>
@@ -32,25 +33,25 @@ export function TaskCard({ task, onEdit, onDelete, onStart, onPause, onResume, o
       <TaskSessions key={task.updatedAt} taskId={task.id} />
       <div className={styles.actions}>
         {task.status === 'pending' && (
-          <Button variant="primary" size="sm" onClick={() => { if (onStart) onStart(task.id); }}>Start</Button>
+          <Button variant="primary" size="sm" disabled={isBusy} onClick={() => { if (onStart) onStart(task.id); }}>Start</Button>
         )}
         {task.status === 'active' && (
           <>
-            <Button variant="outline" size="sm" onClick={() => { if (onPause) onPause(task.id); }}>Pause</Button>
-            <Button variant="primary" size="sm" onClick={() => { if (onComplete) onComplete(task.id); }}>Complete</Button>
+            <Button variant="outline" size="sm" disabled={isBusy} onClick={() => { if (onPause) onPause(task.id); }}>Pause</Button>
+            <Button variant="primary" size="sm" disabled={isBusy} onClick={() => { if (onComplete) onComplete(task.id); }}>Complete</Button>
           </>
         )}
         {task.status === 'pause' && (
           <>
-            <Button variant="outline" size="sm" onClick={() => { if (onResume) onResume(task.id); }}>Resume</Button>
-            <Button variant="primary" size="sm" onClick={() => { if (onComplete) onComplete(task.id); }}>Complete</Button>
+            <Button variant="outline" size="sm" disabled={isBusy} onClick={() => { if (onResume) onResume(task.id); }}>Resume</Button>
+            <Button variant="primary" size="sm" disabled={isBusy} onClick={() => { if (onComplete) onComplete(task.id); }}>Complete</Button>
           </>
         )}
         {task.status === 'completed' && (
           <Button variant="outline" size="sm" onClick={() => { if (onEdit) onEdit(task); }} disabled>Completed</Button>
         )}
-        <Button variant="outline" size="sm" onClick={() => { if (onEdit) onEdit(task); }} disabled={task.status === 'completed'}>Edit</Button>
-        <Button variant="danger" size="sm" onClick={() => { if (onDelete) onDelete(task.id); }} disabled={task.status === 'active'}>Delete</Button>
+        <Button variant="outline" size="sm" onClick={() => { if (onEdit) onEdit(task); }} disabled={isBusy || task.status === 'completed'}>Edit</Button>
+        <Button variant="danger" size="sm" onClick={() => { if (onDelete) onDelete(task.id); }} disabled={isBusy || task.status === 'active'}>Delete</Button>
       </div>
     </Card>
   );
