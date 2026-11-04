@@ -12,7 +12,7 @@ function LoginContent() {
   const { status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  const callbackUrl = searchParams.get('callbackUrl') || '/tasks';
 
   useEffect(() => {
     if (status === 'authenticated') {
