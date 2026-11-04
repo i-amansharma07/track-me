@@ -4,4 +4,6 @@ import { authConfig } from "@/auth/auth.config";
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const handler = NextAuth(authConfig);
 
+export const dynamic = "force-dynamic";
+
 export { handler as GET, handler as POST };
