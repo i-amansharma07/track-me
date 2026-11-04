@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/require-await */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/require-await */
 import { TaskTag, TaskStatus } from "./task.types";
 import { prisma } from "@/db/prisma";
 
@@ -26,9 +26,7 @@ function getClient(tx?: any) {
 
 export class TaskRepository {
   async create(data: CreateTaskInput, tx?: any) {
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const client = tx || prisma;
+    const client = getClient(tx);
     return client.task.create({
       data: {
         userId: data.userId,

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
 import { NextRequest, NextResponse } from "next/server";
 import { TaskService } from "./task.service";
 import { TaskRepository } from "./task.repository";
@@ -19,7 +19,7 @@ const service = new TaskService(repo);
 
 function extractErrorInfo(err: unknown): { message: string; code: string; statusCode: number } {
   if (err instanceof Error) {
-    const customErr = err instanceof Error ? (err as unknown as Record<string, unknown>) : {};
+    const customErr = err as unknown as Record<string, unknown>;
     return {
       message: err.message || "Something went wrong",
       code: typeof customErr.code === "string" ? customErr.code : AppErrorCode.INTERNAL_ERROR,
@@ -32,10 +32,9 @@ function extractErrorInfo(err: unknown): { message: string; code: string; status
 export class TaskController {
   async create(req: Request) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const body: Record<string, unknown> = await req.json();
+      const body = await req.json() as Record<string, unknown>;
       const validated = validateWithSchema(createTaskSchema, { title: body.title, tag: body.tag });
-      const userId = (await resolveSessionUser(req as Request)).userId;
+      const userId = (await resolveSessionUser(req)).userId;
       const task = await service.create({ ...validated, userId });
       return NextResponse.json(createSuccessResponse(task, "Task created"), { status: 201 });
     } catch (err: unknown) {
@@ -49,7 +48,7 @@ export class TaskController {
   async list(req: NextRequest) {
     try {
       const url = new URL(req.url);
-      const userId = (await resolveSessionUser(req as Request)).userId;
+      const userId = (await resolveSessionUser(req)).userId;
       const statusParam = url.searchParams.get("status");
       const tagParam = url.searchParams.get("tag");
       const paginationOpts = parsePaginationOptions({
@@ -57,8 +56,8 @@ export class TaskController {
         limit: url.searchParams.get("limit") ? Number(url.searchParams.get("limit")) : undefined,
       });
       const filters = {
-        status: (statusParam as TaskStatus) || undefined,
-        tag: (tagParam as TaskTag) || undefined,
+        status: statusParam ? (statusParam as TaskStatus) : undefined,
+        tag: tagParam ? (tagParam as TaskTag) : undefined,
         page: paginationOpts.page,
         limit: paginationOpts.limit,
       };
@@ -91,14 +90,13 @@ export class TaskController {
 
   async update(params: { taskId: string }, req: Request) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const body: Record<string, unknown> = await req.json();
-      const userId = (await resolveSessionUser(req as Request)).userId;
+      const body = await req.json() as Record<string, unknown>;
+      const userId = (await resolveSessionUser(req)).userId;
       const updated = await service.update(params.taskId, userId, {
         title: typeof body.title === "string" ? String(body.title) : undefined,
         tag:
           typeof body.tag === "string"
-            ? (String(body.tag) as import("./task.types").TaskTag)
+            ? (String(body.tag) as TaskTag)
             : undefined,
       });
       return NextResponse.json(createSuccessResponse(updated, "Task updated"));
@@ -112,7 +110,7 @@ export class TaskController {
 
   async start(params: { taskId: string }, req: Request) {
     try {
-      const userId = (await resolveSessionUser(req as Request)).userId;
+      const userId = (await resolveSessionUser(req)).userId;
       const result = await service.start(params.taskId, userId);
       return NextResponse.json(createSuccessResponse(result, "Task started"));
     } catch (err: unknown) {
@@ -125,7 +123,7 @@ export class TaskController {
 
   async pause(params: { taskId: string }, req: Request) {
     try {
-      const userId = (await resolveSessionUser(req as Request)).userId;
+      const userId = (await resolveSessionUser(req)).userId;
       const result = await service.pause(params.taskId, userId);
       return NextResponse.json(createSuccessResponse(result, "Task paused"));
     } catch (err: unknown) {
@@ -138,7 +136,7 @@ export class TaskController {
 
   async resume(params: { taskId: string }, req: Request) {
     try {
-      const userId = (await resolveSessionUser(req as Request)).userId;
+      const userId = (await resolveSessionUser(req)).userId;
       const result = await service.resume(params.taskId, userId);
       return NextResponse.json(createSuccessResponse(result, "Task resumed"));
     } catch (err: unknown) {
@@ -151,7 +149,7 @@ export class TaskController {
 
   async complete(params: { taskId: string }, req: Request) {
     try {
-      const userId = (await resolveSessionUser(req as Request)).userId;
+      const userId = (await resolveSessionUser(req)).userId;
       const result = await service.complete(params.taskId, userId);
       return NextResponse.json(createSuccessResponse(result, "Task completed"));
     } catch (err: unknown) {

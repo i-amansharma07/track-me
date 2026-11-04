@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { signOut, useSession } from 'next-auth/react';
 import { Dropdown } from '@/components/ui/dropdown';
 import styles from './header.module.css';

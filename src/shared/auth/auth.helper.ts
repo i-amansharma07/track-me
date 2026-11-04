@@ -26,7 +26,7 @@ export async function resolveAuthenticatedUser(req?: Request): Promise<Authentic
         name: session.user.name || undefined,
       };
     }
-  } catch (e) {
+  } catch {
     // Fall through
   }
 
