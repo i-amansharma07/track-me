@@ -99,6 +99,30 @@
   background-color: rgba(56, 189, 248, 0.15);
 }
 
+.textRunning {
+  color: #34d399;
+}
+
+.textPaused {
+  color: #fbbf24;
+}
+
+.textCompleted {
+  color: #38bdf8;
+}
+
+.dotRunning {
+  background-color: #34d399;
+}
+
+.dotPaused {
+  background-color: #fbbf24;
+}
+
+.dotCompleted {
+  background-color: #38bdf8;
+}
+
 .kebabBtn {
   width: 44px;
   height: 44px;

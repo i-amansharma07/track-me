@@ -64,16 +64,16 @@ export function TaskCard({
   const isPending = task.status === "pending";
 
   const statusDot = isRunning
-    ? "bg-[#34d399]"
+    ? styles.dotRunning
     : isPaused || isPending
-      ? "bg-[#fbbf24]"
-      : "bg-[#38bdf8]";
+      ? styles.dotPaused
+      : styles.dotCompleted;
 
   const statusText = isRunning
-    ? "text-[#34d399]"
+    ? styles.textRunning
     : isPaused || isPending
-      ? "text-[#fbbf24]"
-      : "text-[#38bdf8]";
+      ? styles.textPaused
+      : styles.textCompleted;
 
   const statusLabel = isRunning ? "Running" : isPaused || isPending ? "Paused" : "Completed";
   const statusClass = isRunning ? "running" : isPaused || isPending ? "paused" : "completed";
