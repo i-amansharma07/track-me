@@ -76,6 +76,7 @@ export function TaskCard({
       : "text-[#38bdf8]";
 
   const statusLabel = isRunning ? "Running" : isPaused || isPending ? "Paused" : "Completed";
+  const statusClass = isRunning ? "running" : isPaused || isPending ? "paused" : "completed";
 
   const created = formatDate(task.createdAt);
   const totalText = formatDuration(totalDuration);
@@ -116,8 +117,9 @@ export function TaskCard({
           </button>
           <span className={`${styles.statusLabel} ${statusText}`}>
             <span className={`${styles.statusDot} ${statusDot}`} aria-hidden="true"></span>
-            {statusLabel} · {task.tag || "Study"}
+            {statusLabel}
           </span>
+          <span className={`${styles.tagBadge} ${statusClass} ${statusText}`}>{task.tag || "Study"}</span>
           <Dropdown
             align="right"
             trigger={
