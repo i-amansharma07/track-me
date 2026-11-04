@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { signOut, useSession } from 'next-auth/react';
-import { Dropdown } from '@/components/ui/dropdown';
-import styles from './header.module.css';
+import { signOut, useSession } from "next-auth/react";
+import { Dropdown } from "@/components/ui/dropdown";
+import styles from "./header.module.css";
 
 export type HeaderProps = {
   mobileOpen?: boolean;
   onToggleMobile?: () => void;
-}
+};
 
 export function Header({ mobileOpen = false, onToggleMobile }: HeaderProps) {
   const { data: session } = useSession();
@@ -17,32 +17,34 @@ export function Header({ mobileOpen = false, onToggleMobile }: HeaderProps) {
     <header className={styles.header}>
       <div className={styles.brand}>Track Me</div>
       <div className={styles.right}>
-        <button className={styles.mobileToggle} onClick={onToggleMobile} aria-label="Toggle navigation" aria-expanded={mobileOpen}>
+        {/* <button className={styles.mobileToggle} onClick={onToggleMobile} aria-label="Toggle navigation" aria-expanded={mobileOpen}>
           <span className={styles.hamburger} aria-hidden="true" />
-        </button>
+        </button> */}
         {user && (
           <Dropdown
             align="right"
             trigger={
               <div className={styles.userTrigger} aria-label="Open user menu">
                 <img
-                  src={user.image || ''}
-                  alt={user.name || 'User'}
+                  src={user.image || ""}
+                  alt={user.name || "User"}
                   className={styles.avatar}
                   onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
+                    (e.target as HTMLImageElement).style.display = "none";
                   }}
                 />
-                <span className={styles.userName}>{user.name || user.email || 'User'}</span>
-                <span className={styles.chevron} aria-hidden="true">▼</span>
+                <span className={styles.userName}>{user.name || user.email || "User"}</span>
+                <span className={styles.chevron} aria-hidden="true">
+                  ▼
+                </span>
               </div>
             }
             options={[
               {
-                label: 'Sign out',
-                value: 'signout',
+                label: "Sign out",
+                value: "signout",
                 onClick: () => {
-                  void signOut({ callbackUrl: '/login' });
+                  void signOut({ callbackUrl: "/login" });
                 },
               },
             ]}

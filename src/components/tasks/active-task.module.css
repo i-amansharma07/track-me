@@ -2,7 +2,7 @@
   position: sticky;
   top: var(--space-4);
   padding: var(--space-5);
-  margin-bottom: var(--space-6);
+  margin: var(--space-3);
 }
 
 .headerRow {
