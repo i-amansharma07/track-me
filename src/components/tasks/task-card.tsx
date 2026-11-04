@@ -53,11 +53,9 @@ export function TaskCard({
     return Math.max(0, Math.floor((ended - started) / 1000));
   });
 
-  const totalDuration =
-    task.totalDurationSeconds ?? logDurations.reduce((a, b) => a + b, 0);
+  const totalDuration = task.totalDurationSeconds ?? logDurations.reduce((a, b) => a + b, 0);
   const longestDuration =
-    task.longestDurationSeconds ??
-    (logDurations.length > 0 ? Math.max(...logDurations) : 0);
+    task.longestDurationSeconds ?? (logDurations.length > 0 ? Math.max(...logDurations) : 0);
 
   const isRunning = task.status === "active";
   const isPaused = task.status === "pause";
@@ -119,15 +117,10 @@ export function TaskCard({
             <span className={`${styles.statusDot} ${statusDot}`} aria-hidden="true"></span>
             {statusLabel}
           </span>
-          <span className={`${styles.tagBadge} ${statusClass} ${statusText}`}>{task.tag || "Study"}</span>
           <Dropdown
             align="right"
             trigger={
-              <button
-                type="button"
-                aria-label="More options"
-                className={styles.kebabBtn}
-              >
+              <button type="button" aria-label="More options" className={styles.kebabBtn}>
                 <svg
                   viewBox="0 0 24 24"
                   fill="currentColor"
@@ -164,38 +157,23 @@ export function TaskCard({
         </p>
       </div>
 
-      <div
-        className={`${styles.collapsible} ${expanded ? styles.expanded : ""}`}
-      >
+      <div className={`${styles.collapsible} ${expanded ? styles.expanded : ""}`}>
         <ul className={styles.sessionList}>
           {logs.map((log, index) => {
             const duration = logDurations[index];
-            const isLongest =
-              logs.length > 1 && duration === longestDuration && duration > 0;
+            const isLongest = logs.length > 1 && duration === longestDuration && duration > 0;
             const isTiny = duration < 60;
             const barWidth =
-              longestDuration > 0
-                ? Math.max(2, (duration / longestDuration) * 100)
-                : 2;
-            const endedTime = log.endedAt
-              ? formatClock(log.endedAt)
-              : formatClock(log.startedAt);
+              longestDuration > 0 ? Math.max(2, (duration / longestDuration) * 100) : 2;
+            const endedTime = log.endedAt ? formatClock(log.endedAt) : formatClock(log.startedAt);
             const timeRange = `${formatClock(log.startedAt)} – ${endedTime}`;
 
             return (
               <li key={log.id} className={styles.sessionRow}>
-                <div
-                  className={`${styles.sessionText} ${
-                    isTiny ? styles.dimmed : ""
-                  }`}
-                >
+                <div className={`${styles.sessionText} ${isTiny ? styles.dimmed : ""}`}>
                   <span className={styles.timeRange}>{timeRange}</span>
                   {isLongest && <span className={styles.longestLabel}>longest</span>}
-                  <span
-                    className={`${styles.sessionDuration} ${
-                      isTiny ? styles.dimmed : ""
-                    }`}
-                  >
+                  <span className={`${styles.sessionDuration} ${isTiny ? styles.dimmed : ""}`}>
                     {formatDuration(duration)}
                   </span>
                 </div>
