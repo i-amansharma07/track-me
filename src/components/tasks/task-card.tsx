@@ -6,6 +6,7 @@ import { Dropdown } from "@/components/ui/dropdown";
 import { TaskStatusBadge, TaskCategoryBadge } from "./task-badges";
 import { TaskSessions } from "./task-sessions";
 import { TaskData } from "@/lib/api";
+import { formatDate } from "@/lib/date";
 import styles from "./task-card.module.css";
 
 export type TaskCardProps = {
@@ -29,7 +30,7 @@ export function TaskCard({
   onComplete,
   isBusy = false,
 }: TaskCardProps) {
-  const created = new Date(task.createdAt).toLocaleDateString();
+  const created = formatDate(task.createdAt);
   return (
     <Card variant="elevated" className={styles.card}>
       <div className={styles.header}>
