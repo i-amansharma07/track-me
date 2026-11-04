@@ -72,6 +72,17 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Hide scrollbar for all browsers while keeping scroll functionality */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+html,
+body {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--color-bg);
