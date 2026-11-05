@@ -221,7 +221,8 @@ export function TaskCard({
                 className={styles.reopenIcon}
                 aria-hidden="true"
               >
-                <path d="M3 7v6a4 4 0 0 0 4 4h6m-4-4V3" />
+                <path d="M21 12a9 9 0 1 1-3-6.7" />
+                <path d="M21 3v6h-6" />
               </svg>
               Reopen
             </button>

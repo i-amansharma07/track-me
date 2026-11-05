@@ -103,10 +103,27 @@ export class TaskService {
         throw ConflictError("Task already has an open time log.");
       }
       await this.repo.createTimeLog(taskId, tx);
-      return tx.task.update({
-        where: { id: taskId },
-        data: { status: TaskStatus.ACTIVE },
-      });
+      try {
+        return tx.task.update({
+          where: { id: taskId },
+          data: { status: TaskStatus.ACTIVE },
+        });
+      } catch (err: unknown) {
+        const prismaErr = err as Record<string, unknown>;
+        if (
+          typeof prismaErr.code === "string" &&
+          prismaErr.code === "P2002" &&
+          typeof prismaErr.meta === "object" &&
+          prismaErr.meta !== null
+        ) {
+          const meta = prismaErr.meta as Record<string, unknown>;
+          const target = meta.target;
+          if (Array.isArray(target) && target.includes("userId")) {
+            throw ConflictError("Another task is already active. Pause it first.");
+          }
+        }
+        throw err;
+      }
     });
   }
 
@@ -147,10 +164,27 @@ export class TaskService {
         throw ConflictError("Task already has an open time log.");
       }
       await this.repo.createTimeLog(taskId, tx);
-      return tx.task.update({
-        where: { id: taskId },
-        data: { status: TaskStatus.ACTIVE },
-      });
+      try {
+        return tx.task.update({
+          where: { id: taskId },
+          data: { status: TaskStatus.ACTIVE },
+        });
+      } catch (err: unknown) {
+        const prismaErr = err as Record<string, unknown>;
+        if (
+          typeof prismaErr.code === "string" &&
+          prismaErr.code === "P2002" &&
+          typeof prismaErr.meta === "object" &&
+          prismaErr.meta !== null
+        ) {
+          const meta = prismaErr.meta as Record<string, unknown>;
+          const target = meta.target;
+          if (Array.isArray(target) && target.includes("userId")) {
+            throw ConflictError("Another task is already active. Pause it first.");
+          }
+        }
+        throw err;
+      }
     });
   }
 
