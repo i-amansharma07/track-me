@@ -82,17 +82,18 @@ export default function TasksPage() {
     }
   };
 
-  const handleLifecycle = async (action: "start" | "pause" | "resume" | "complete", id: string) => {
+  const handleLifecycle = async (action: "start" | "pause" | "resume" | "complete" | "reopen", id: string) => {
     setSubmitting(true);
     try {
       if (action === "start") await api.tasks.start(id);
       if (action === "pause") await api.tasks.pause(id);
       if (action === "resume") await api.tasks.resume(id);
       if (action === "complete") await api.tasks.complete(id);
+      if (action === "reopen") await api.tasks.reopen(id);
       await fetchTasks();
       setToast({
         open: true,
-        message: `Task ${action === "start" ? "started" : action === "pause" ? "paused" : action === "resume" ? "resumed" : "completed"}`,
+        message: `Task ${action === "start" ? "started" : action === "pause" ? "paused" : action === "resume" ? "resumed" : action === "complete" ? "completed" : "reopened"}`,
         variant: "success",
       });
     } catch (e: unknown) {
@@ -142,6 +143,9 @@ export default function TasksPage() {
           }}
           onComplete={(id) => {
             void handleLifecycle("complete", id);
+          }}
+          onReopen={(id) => {
+            void handleLifecycle("reopen", id);
           }}
           isLoading={loading}
           error={error}

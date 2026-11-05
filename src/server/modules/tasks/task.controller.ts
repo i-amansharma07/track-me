@@ -160,6 +160,19 @@ export class TaskController {
     }
   }
 
+  async reopen(params: { taskId: string }, req: Request) {
+    try {
+      const userId = (await resolveSessionUser(req)).userId;
+      const result = await service.reopen(params.taskId, userId);
+      return NextResponse.json(createSuccessResponse(result, "Task reopened"));
+    } catch (err: unknown) {
+      const info = extractErrorInfo(err);
+      return NextResponse.json(createErrorResponse(info.message, info.code), {
+        status: info.statusCode,
+      });
+    }
+  }
+
   async getTimeLogs(params: { taskId: string }, req?: Request) {
     try {
       const userId = (await resolveSessionUser(req)).userId;

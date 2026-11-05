@@ -177,6 +177,23 @@ export class TaskService {
     });
   }
 
+  async reopen(taskId: string, userId: string) {
+    return this.runTransaction(async (tx) => {
+      await tx.$executeRaw`SELECT * FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
+      const task = await this.repo.findById(taskId, userId, tx);
+      if (!task) {
+        throw NotFoundError("Task not found");
+      }
+      if (task.status !== TaskStatus.COMPLETED) {
+        throw ConflictError("Task can only be reopened from completed status.");
+      }
+      return tx.task.update({
+        where: { id: taskId },
+        data: { status: TaskStatus.PAUSE, completedAt: null },
+      });
+    });
+  }
+
   async getTimeLogs(taskId: string, userId: string) {
     const task = await this.repo.findById(taskId, userId);
     if (!task) {

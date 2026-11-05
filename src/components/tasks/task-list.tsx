@@ -13,12 +13,13 @@ export type TaskListProps = {
   onPause?: (taskId: string) => void;
   onResume?: (taskId: string) => void;
   onComplete?: (taskId: string) => void;
+  onReopen?: (taskId: string) => void;
   isLoading?: boolean;
   error?: string | null;
   onRetry?: () => void;
 }
 
-export function TaskList({ tasks, onEdit, onDelete, onStart, onPause, onResume, onComplete, isLoading, error, onRetry }: TaskListProps) {
+export function TaskList({ tasks, onEdit, onDelete, onStart, onPause, onResume, onComplete, onReopen, isLoading, error, onRetry }: TaskListProps) {
   if (isLoading) {
     return (
       <div className={styles.loading}>
@@ -54,6 +55,7 @@ export function TaskList({ tasks, onEdit, onDelete, onStart, onPause, onResume, 
           onPause={() => onPause?.(task.id)}
           onResume={() => onResume?.(task.id)}
           onComplete={() => onComplete?.(task.id)}
+          onReopen={() => onReopen?.(task.id)}
         />
       ))}
     </div>

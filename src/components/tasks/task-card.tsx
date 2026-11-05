@@ -16,6 +16,7 @@ type TaskCardProps = {
   };
   onResume?: () => void;
   onComplete?: () => void;
+  onReopen?: () => void;
   onStart?: () => void;
   onPause?: () => void;
   onEdit?: (task: TaskData) => void;
@@ -39,6 +40,7 @@ export function TaskCard({
   task,
   onResume,
   onComplete,
+  onReopen,
   onStart,
   onPause,
   onEdit,
@@ -207,26 +209,39 @@ export function TaskCard({
             </svg>
             {isPaused ? "Resume" : isPending ? "Start" : "Pause"}
           </button>
-          <button
-            type="button"
-            className={styles.completeBtn}
-            onClick={onComplete}
-            disabled={task.status === "completed"}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className={styles.checkIcon}
-              aria-hidden="true"
-            >
-              <path d="M5 12.5l4.5 4.5L19 7.5" />
-            </svg>
-            Complete
-          </button>
+          {task.status === "completed" ? (
+            <button type="button" className={styles.reopenBtn} onClick={onReopen}>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={styles.reopenIcon}
+                aria-hidden="true"
+              >
+                <path d="M3 7v6a4 4 0 0 0 4 4h6m-4-4V3" />
+              </svg>
+              Reopen
+            </button>
+          ) : (
+            <button type="button" className={styles.completeBtn} onClick={onComplete}>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={styles.checkIcon}
+                aria-hidden="true"
+              >
+                <path d="M5 12.5l4.5 4.5L19 7.5" />
+              </svg>
+              Complete
+            </button>
+          )}
         </footer>
       </div>
     </article>

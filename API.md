@@ -192,6 +192,14 @@ Response (200): updated task.
 
 ---
 
+### POST /api/tasks/:taskId/reopen
+
+Reopens a `completed` task back to `pause` status. Time logs remain unchanged. `completedAt` is cleared. Returns 409 if the task is not `completed`.
+
+Response (200): updated task.
+
+---
+
 ### GET /api/tasks/:taskId/timelogs
 
 Retrieve time logs for the task, ordered by `startedAt` ascending. Returns 404 if the task does not exist or is not owned by the user.
@@ -299,6 +307,7 @@ Valid transitions:
 | `active`     | complete | `completed` |
 | `pause`      | resume   | `active`    |
 | `pause`      | complete | `completed` |
+| `completed`  | reopen   | `pause`     |
 
 Invalid transitions return 409 (`BUSINESS_CONFLICT`).
 

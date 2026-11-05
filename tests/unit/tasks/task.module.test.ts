@@ -29,4 +29,8 @@ describe("Task controller and validation", () => {
   it("delete checks active status", () => {
     expect(typeof controller.delete).toBe("function");
   });
+
+  it("reopen is exposed on controller", () => {
+    expect(typeof controller.reopen).toBe("function");
+  });
 });

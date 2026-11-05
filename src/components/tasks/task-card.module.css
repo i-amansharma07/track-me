@@ -237,7 +237,8 @@
 }
 
 .resumeBtn,
-.completeBtn {
+.completeBtn,
+.reopenBtn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -290,8 +291,29 @@
   cursor: not-allowed;
 }
 
+.reopenBtn {
+  background: transparent;
+  border: 1px solid #38bdf8;
+  color: #38bdf8;
+}
+
+.reopenBtn:hover:not(:disabled) {
+  background-color: #38bdf8;
+  color: #000;
+}
+
+.reopenBtn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.reopenBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .playIcon,
-.checkIcon {
+.checkIcon,
+.reopenIcon {
   width: 16px;
   height: 16px;
 }
