@@ -55,7 +55,82 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<ApiResp
   return json;
 }
 
+export type AnalyticsTimelineSegment =
+  | {
+      type: "task";
+      taskId: string;
+      taskTitle: string;
+      tag: TaskTag | null;
+      startMinute: number;
+      endMinute: number;
+      durationMinutes: number;
+      durationSeconds: number;
+      isOngoing: boolean;
+    }
+  | {
+      type: "untracked";
+      startMinute: number;
+      endMinute: number;
+      durationMinutes: number;
+      durationSeconds: number;
+      isOngoing: boolean;
+    };
+
+export type AnalyticsSession = {
+  id: string;
+  originalStartedAt: string;
+  originalEndedAt: string | null;
+  effectiveStartedAt: string;
+  effectiveEndedAt: string;
+  durationSeconds: number;
+  durationMinutes: number;
+  countedDurationSeconds: number;
+  countedDurationMinutes: number;
+  overlapSeconds: number;
+  isOngoing: boolean;
+};
+
+export type AnalyticsTask = {
+  id: string;
+  title: string;
+  tag: TaskTag | null;
+  status: TaskStatus;
+  totalDurationSeconds: number;
+  totalDurationMinutes: number;
+  percentageOfDay: number;
+  sessionCount: number;
+  sessions: AnalyticsSession[];
+};
+
+export type DailyAnalyticsData = {
+  date: string;
+  timezone: string;
+  dayStart: string;
+  dayEnd: string;
+  dayDurationSeconds: number;
+  dayDurationMinutes: number;
+  summary: {
+    totalTrackedSeconds: number;
+    totalTrackedMinutes: number;
+    untrackedSeconds: number;
+    trackedPercentage: number;
+    untrackedPercentage: number;
+    totalTasks: number;
+    totalSessions: number;
+  };
+  tasks: AnalyticsTask[];
+  timeline: AnalyticsTimelineSegment[];
+  warnings: { code: string; message: string }[];
+};
+
 export const api = {
+  analytics: {
+    daily: (params: { date: string; timezone?: string }) => {
+      const search = new URLSearchParams({ date: params.date });
+      if (params.timezone) search.set("timezone", params.timezone);
+      return fetchJson<DailyAnalyticsData>(`${BASE}/analytics?${search.toString()}`);
+    },
+  },
   tasks: {
     list: (params?: { status?: TaskStatus; tag?: TaskTag; page?: number; limit?: number }) => {
       const search = new URLSearchParams();
