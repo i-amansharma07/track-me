@@ -24,10 +24,8 @@ export class AnalyticsRepository {
     return prisma.task.findMany({
       where: {
         userId,
-        deletedAt: null,
         timeLogs: {
           some: {
-            deletedAt: null,
             startedAt: { lt: dayEnd },
             OR: [{ endedAt: { gt: dayStart } }, { endedAt: null }],
           },
@@ -41,7 +39,6 @@ export class AnalyticsRepository {
         tag: true,
         timeLogs: {
           where: {
-            deletedAt: null,
             startedAt: { lt: dayEnd },
             OR: [{ endedAt: { gt: dayStart } }, { endedAt: null }],
           },

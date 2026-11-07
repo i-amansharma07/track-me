@@ -13,6 +13,11 @@
 | `date` | `YYYY-MM-DD` | Yes | Local calendar date to analyze (strict calendar validation). |
 | `timezone` | IANA timezone (e.g. `Asia/Kolkata`, `UTC`) | No | Timezone used for day boundaries and minute offsets. **Default: `UTC`** when omitted. Frontend should send the user’s timezone explicitly. |
 
+## Data scope
+
+- Analytics is **historical**: it includes time logged by the authenticated user for the requested day, **including tasks/time logs that have been soft-deleted** (so users can review past activity even after deleting tasks).
+- Only the authenticated user’s data is returned (ownership enforced server-side). Deleted state does not bypass ownership.
+
 Invalid/missing `date`, invalid calendar dates, and invalid IANA timezones return `400` with the standard error envelope.
 
 ## Response envelope

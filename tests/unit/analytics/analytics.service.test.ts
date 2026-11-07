@@ -113,6 +113,33 @@ describe("AnalyticsService.getDaily", () => {
     expect(r.warnings.length).toBeGreaterThan(0);
   });
 
+  it("includes soft-deleted task history in analytics", async () => {
+    const rows: AnalyticsTaskRow[] = [
+      {
+        id: "deleted-task",
+        userId: "u1",
+        title: "Deleted work",
+        status: "completed",
+        tag: "Code",
+        timeLogs: [
+          {
+            id: "l1",
+            taskId: "deleted-task",
+            startedAt: new Date("2026-11-04T09:00:00Z"),
+            endedAt: new Date("2026-11-04T10:30:00Z"),
+            createdAt: new Date("2026-11-04T09:00:00Z"),
+          },
+        ],
+      },
+    ];
+    const svc = new AnalyticsService(repo(rows) as any);
+    const r = await svc.getDaily("2026-11-04", "UTC", "u1");
+    expect(r.summary.totalTasks).toBe(1);
+    expect(r.summary.totalTrackedSeconds).toBe(5400);
+    expect(r.tasks[0]).toMatchObject({ id: "deleted-task", title: "Deleted work" });
+    expect(r.timeline.some((s) => s.type === "task" && s.taskId === "deleted-task")).toBe(true);
+  });
+
   it("includes dayDurationMinutes for DST day", async () => {
     const svc = new AnalyticsService(repo([]) as any);
     const r = await svc.getDaily("2026-03-08", "America/New_York", "u1");
