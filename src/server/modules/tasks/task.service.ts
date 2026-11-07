@@ -18,6 +18,14 @@ export class TaskService {
     return prisma.$transaction(fn, { maxWait: 10_000, timeout: 20_000 });
   }
 
+  private async getOwnedTask(id: string, userId: string, tx?: any) {
+    const task = await this.repo.findById(id, userId, tx);
+    if (!task) {
+      throw NotFoundError("Task not found");
+    }
+    return task;
+  }
+
   async create(input: CreateTaskInput) {
     const validated = validateWithSchema(createTaskSchema, input);
     return this.repo.create({ ...validated, userId: input.userId });
@@ -50,18 +58,11 @@ export class TaskService {
   }
 
   async getById(id: string, userId: string) {
-    const task = await this.repo.findById(id, userId);
-    if (!task) {
-      throw NotFoundError("Task not found");
-    }
-    return task;
+    return this.getOwnedTask(id, userId);
   }
 
   async update(id: string, userId: string, data: UpdateTaskInput) {
-    const task = await this.repo.findById(id, userId);
-    if (!task) {
-      throw NotFoundError("Task not found");
-    }
+    await this.getOwnedTask(id, userId);
     if ((data as Record<string, unknown>).status !== undefined) {
       throw new AppError(
         "Status changes are not allowed through this endpoint",
@@ -70,44 +71,52 @@ export class TaskService {
         true,
       );
     }
-    return this.repo.update(id, data);
+    const result = await this.repo.update(id, userId, data);
+    if (result.count === 0) {
+      throw NotFoundError("Task not found");
+    }
+    return this.getOwnedTask(id, userId);
   }
 
   async delete(id: string, userId: string) {
-    const task = await this.repo.findById(id, userId);
-    if (!task) {
-      throw NotFoundError("Task not found");
-    }
-    if (task.status === TaskStatus.ACTIVE) {
-      throw ConflictError("Cannot delete an active task. Pause or complete it first.");
-    }
-    return this.repo.delete(id);
+    return this.runTransaction(async (tx) => {
+      await tx.$executeRaw`SELECT * FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
+      const task = await this.getOwnedTask(id, userId, tx);
+      if (task.status === TaskStatus.ACTIVE) {
+        throw ConflictError("Cannot delete an active task. Pause or complete it first.");
+      }
+      const now = new Date();
+      const result = await this.repo.softDelete(id, userId, now, tx);
+      if (result.count === 0) {
+        throw NotFoundError("Task not found");
+      }
+      return { deletedAt: now };
+    });
   }
 
   async start(taskId: string, userId: string) {
     return this.runTransaction(async (tx) => {
       await tx.$executeRaw`SELECT * FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
-      const task = await this.repo.findById(taskId, userId, tx);
-      if (!task) {
-        throw NotFoundError("Task not found");
-      }
+      const task = await this.getOwnedTask(taskId, userId, tx);
       if (task.status !== TaskStatus.PENDING) {
         throw ConflictError("Task can only be started from pending status.");
       }
-      const activeTask = await this.repo.findActiveTaskByUser(userId, tx);
+      const activeTask = (await this.repo.findActiveTaskByUser(userId, tx)) as { id: string } | null;
       if (activeTask && activeTask.id !== taskId) {
         throw ConflictError("Another task is already active. Pause it first.");
       }
-      const openLog = await this.repo.findOpenTimeLog(taskId, tx);
+      const openLog = (await this.repo.findOpenTimeLog(taskId, tx)) as { id: string } | null;
       if (openLog) {
         throw ConflictError("Task already has an open time log.");
       }
       await this.repo.createTimeLog(taskId, tx);
       try {
-        return tx.task.update({
-          where: { id: taskId },
+        const updated = await tx.task.updateMany({
+          where: { id: taskId, userId, deletedAt: null },
           data: { status: TaskStatus.ACTIVE },
         });
+        if (updated.count === 0) throw NotFoundError("Task not found");
+        return this.getOwnedTask(taskId, userId, tx);
       } catch (err: unknown) {
         const prismaErr = err as Record<string, unknown>;
         if (
@@ -130,45 +139,43 @@ export class TaskService {
   async pause(taskId: string, userId: string) {
     return this.runTransaction(async (tx) => {
       await tx.$executeRaw`SELECT * FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
-      const task = await this.repo.findById(taskId, userId, tx);
-      if (!task) {
-        throw NotFoundError("Task not found");
-      }
+      const task = await this.getOwnedTask(taskId, userId, tx);
       if (task.status !== TaskStatus.ACTIVE) {
         throw ConflictError("Task can only be paused when active.");
       }
-      const openLog = await this.repo.findOpenTimeLog(taskId, tx);
+      const openLog = (await this.repo.findOpenTimeLog(taskId, tx)) as { id: string } | null;
       if (!openLog) {
         throw ConflictError("No open time log found for active task.");
       }
-      await this.repo.closeTimeLog(openLog.id, tx);
-      return tx.task.update({
-        where: { id: taskId },
+      await this.repo.closeTimeLog(openLog.id, new Date(), tx);
+      const updated = await tx.task.updateMany({
+        where: { id: taskId, userId, deletedAt: null },
         data: { status: TaskStatus.PAUSE },
       });
+      if (updated.count === 0) throw NotFoundError("Task not found");
+      return this.getOwnedTask(taskId, userId, tx);
     });
   }
 
   async resume(taskId: string, userId: string) {
     return this.runTransaction(async (tx) => {
       await tx.$executeRaw`SELECT * FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
-      const task = await this.repo.findById(taskId, userId, tx);
-      if (!task) {
-        throw NotFoundError("Task not found");
-      }
+      const task = await this.getOwnedTask(taskId, userId, tx);
       if (task.status !== TaskStatus.PAUSE) {
         throw ConflictError("Task can only be resumed from paused status.");
       }
-      const openLog = await this.repo.findOpenTimeLog(taskId, tx);
+      const openLog = (await this.repo.findOpenTimeLog(taskId, tx)) as { id: string } | null;
       if (openLog) {
         throw ConflictError("Task already has an open time log.");
       }
       await this.repo.createTimeLog(taskId, tx);
       try {
-        return tx.task.update({
-          where: { id: taskId },
+        const updated = await tx.task.updateMany({
+          where: { id: taskId, userId, deletedAt: null },
           data: { status: TaskStatus.ACTIVE },
         });
+        if (updated.count === 0) throw NotFoundError("Task not found");
+        return this.getOwnedTask(taskId, userId, tx);
       } catch (err: unknown) {
         const prismaErr = err as Record<string, unknown>;
         if (
@@ -191,51 +198,43 @@ export class TaskService {
   async complete(taskId: string, userId: string) {
     return this.runTransaction(async (tx) => {
       await tx.$executeRaw`SELECT * FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
-      const task = await this.repo.findById(taskId, userId, tx);
-      if (!task) {
-        throw NotFoundError("Task not found");
-      }
+      const task = await this.getOwnedTask(taskId, userId, tx);
       if (task.status === TaskStatus.COMPLETED) {
         throw ConflictError("Task is already completed.");
       }
       if (task.status === TaskStatus.ACTIVE) {
-        const openLog = await this.repo.findOpenTimeLog(taskId, tx);
+        const openLog = (await this.repo.findOpenTimeLog(taskId, tx)) as { id: string } | null;
         if (openLog) {
-          await this.repo.closeTimeLog(openLog.id, tx);
+          await this.repo.closeTimeLog(openLog.id, new Date(), tx);
         }
       }
-      return tx.task.update({
-        where: { id: taskId },
+      const updated = await tx.task.updateMany({
+        where: { id: taskId, userId, deletedAt: null },
         data: { status: TaskStatus.COMPLETED, completedAt: new Date() },
       });
+      if (updated.count === 0) throw NotFoundError("Task not found");
+      return this.getOwnedTask(taskId, userId, tx);
     });
   }
 
   async reopen(taskId: string, userId: string) {
     return this.runTransaction(async (tx) => {
       await tx.$executeRaw`SELECT * FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
-      const task = await this.repo.findById(taskId, userId, tx);
-      if (!task) {
-        throw NotFoundError("Task not found");
-      }
+      const task = await this.getOwnedTask(taskId, userId, tx);
       if (task.status !== TaskStatus.COMPLETED) {
         throw ConflictError("Task can only be reopened from completed status.");
       }
-      return tx.task.update({
-        where: { id: taskId },
+      const updated = await tx.task.updateMany({
+        where: { id: taskId, userId, deletedAt: null },
         data: { status: TaskStatus.PAUSE, completedAt: null },
       });
+      if (updated.count === 0) throw NotFoundError("Task not found");
+      return this.getOwnedTask(taskId, userId, tx);
     });
   }
 
   async getTimeLogs(taskId: string, userId: string) {
-    const task = await this.repo.findById(taskId, userId);
-    if (!task) {
-      throw NotFoundError("Task not found");
-    }
-    return prisma.taskTimeLog.findMany({
-      where: { taskId },
-      orderBy: { startedAt: "asc" },
-    });
+    await this.getOwnedTask(taskId, userId);
+    return this.repo.listTimeLogs(taskId);
   }
 }

@@ -81,6 +81,7 @@ model Task {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   completedAt DateTime?
+  deletedAt   DateTime?
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   timeLogs    TaskTimeLog[]
 
@@ -94,6 +95,7 @@ model TaskTimeLog {
   startedAt DateTime @default(now())
   endedAt   DateTime?
   createdAt DateTime @default(now())
+  deletedAt DateTime?
   task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   @@index([taskId, startedAt])

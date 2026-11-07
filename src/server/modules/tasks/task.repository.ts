@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/require-await */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, @typescript-eslint/require-await */
 import { TaskTag, TaskStatus } from "./task.types";
 import { prisma } from "@/db/prisma";
 
@@ -40,7 +40,7 @@ export class TaskRepository {
   async findById(id: string, userId: string, tx?: any) {
     const client = getClient(tx);
     return client.task.findFirst({
-      where: { id, userId },
+      where: { id, userId, deletedAt: null },
     });
   }
 
@@ -50,7 +50,10 @@ export class TaskRepository {
     const limit = Math.min(100, Math.max(1, filters.limit || 20));
     const skip = (page - 1) * limit;
 
-    const where: { userId: string; status?: TaskStatus; tag?: TaskTag } = { userId };
+    const where: { userId: string; deletedAt: null; status?: TaskStatus; tag?: TaskTag } = {
+      userId,
+      deletedAt: null,
+    };
     if (filters.status) where.status = filters.status;
     if (filters.tag) where.tag = filters.tag;
 
@@ -62,6 +65,7 @@ export class TaskRepository {
         take: limit,
         include: {
           timeLogs: {
+            where: { deletedAt: null },
             orderBy: { startedAt: "asc" },
           },
         },
@@ -72,54 +76,68 @@ export class TaskRepository {
     return { items, total };
   }
 
-  async update(id: string, data: UpdateTaskInput, tx?: any) {
+  async update(id: string, userId: string, data: UpdateTaskInput, tx?: any) {
     const client = getClient(tx);
-    return client.task.update({
-      where: { id },
+    return client.task.updateMany({
+      where: { id, userId, deletedAt: null },
       data,
     });
   }
 
-  async delete(id: string, tx?: any) {
+  async softDelete(id: string, userId: string, deletedAt: Date, tx?: any) {
     const client = getClient(tx);
-    return client.task.delete({
-      where: { id },
+    const task = await client.task.updateMany({
+      where: { id, userId, deletedAt: null },
+      data: { deletedAt },
     });
+    if (task.count > 0) {
+      await client.taskTimeLog.updateMany({
+        where: { taskId: id, deletedAt: null },
+        data: { deletedAt },
+      });
+    }
+    return task;
   }
 
   async findActiveTaskByUser(userId: string, tx?: any) {
     const client = getClient(tx);
-    return client.task.findFirst({
-      where: { userId, status: "active" },
+    const task = await client.task.findFirst({
+      where: { userId, status: "active", deletedAt: null },
     });
-  }
-
-  async findTaskForUpdate(id: string, userId: string, tx?: any) {
-    const client = getClient(tx);
-    return client.task.findFirst({
-      where: { id, userId },
-    });
+    return task as unknown;
   }
 
   async findOpenTimeLog(taskId: string, tx?: any) {
     const client = getClient(tx);
-    return client.taskTimeLog.findFirst({
-      where: { taskId, endedAt: null },
+    const log = await client.taskTimeLog.findFirst({
+      where: { taskId, endedAt: null, deletedAt: null },
     });
+    return log as unknown;
   }
 
   async createTimeLog(taskId: string, tx?: any) {
     const client = getClient(tx);
-    return client.taskTimeLog.create({
+    const log = await client.taskTimeLog.create({
       data: { taskId },
     });
+    return log as unknown;
   }
 
-  async closeTimeLog(logId: string, tx?: any) {
+  async closeTimeLog(logId: string, endedAt: Date, tx?: any) {
     const client = getClient(tx);
-    return client.taskTimeLog.update({
+    const log = await client.taskTimeLog.update({
       where: { id: logId },
-      data: { endedAt: new Date() },
+      data: { endedAt },
     });
+    return log as unknown;
+  }
+
+  async listTimeLogs(taskId: string, tx?: any) {
+    const client = getClient(tx);
+    const logs = await client.taskTimeLog.findMany({
+      where: { taskId, deletedAt: null },
+      orderBy: { startedAt: "asc" },
+    });
+    return logs as unknown[];
   }
 }
