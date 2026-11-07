@@ -17,6 +17,8 @@ Verified business rules (through code review and service design):
 - Completed is terminal: rejected at service layer.
 - Time tracking calculations use server database timestamps (`startedAt`, `endedAt`) as authoritative source.
 
+**Soft-delete amendment (planned):** add tests for soft-delete visibility, atomic task+timelog `deletedAt` update, deleted-task 404 behavior across list/get/lifecycle/timelogs/analytics, and active-task delete conflict unchanged.
+
 Tests:
 
 - Unit tests for errors, validation, responses, pagination, logging, analytics, task module structure.

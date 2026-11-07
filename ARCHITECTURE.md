@@ -33,6 +33,7 @@ Route Handler → Controller → Service → Repository → Prisma → PostgreSQ
 - Database-level partial unique indexes enforce single active task and single open time log.
 - Schema uses UUIDs for Task and TaskTimeLog; Auth.js-compatible User IDs.
 - Custom SQL migration for partial unique indexes and title check constraint.
+- **Soft delete (planned/being adopted):** tasks and time logs use `deletedAt` timestamps. User-facing queries exclude soft-deleted rows; `DELETE /api/tasks/:taskId` sets `deletedAt` on the task and its time logs transactionally and does not hard-delete. The partial unique active-task index must scope to non-deleted rows (`status='active' AND deletedAt IS NULL`). Cascade FKs remain as safeguards for future approved hard-delete/admin paths.
 
 ## TypeScript Conventions
 

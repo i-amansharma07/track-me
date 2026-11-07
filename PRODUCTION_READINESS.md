@@ -10,13 +10,15 @@ Status: COMPLETE (structural review and documentation)
 - Request validation: All protected endpoints derive `userId` from server session or placeholder context. Client `userId` ignored. `userId` never used without session resolution.
 - Sensitive information: Pino structured logging redacts sensitive fields (password, token, authorization) automatically (`redact`). No stack traces exposed to clients (AppError preserves message/code only).
 - Security headers: No custom security headers configured. Recommended addition before public deployment: `X-Frame-Options`, `Content-Security-Policy`, `Strict-Transport-Security`.
+- **Soft delete (planned):** when implemented, all reads/lifecycle/analytics must filter `deletedAt IS NULL` and enforce ownership so deleted data is never exposed.
 
 ## Database
 
 - Migration: `prisma/migrations/20251031_071200_init/migration.sql` is complete and reproducible. Custom SQL includes partial unique indexes (`Task_active_user_unique`, `TaskTimeLog_open_task_unique`) and title check constraint.
+- **Soft-delete amendment (planned):** new migration must add `deletedAt` to `Task`/`TaskTimeLog` and revise `Task_active_user_unique` to `WHERE status='active' AND "deletedAt" IS NULL`. Do not edit applied migrations.
 - Migration deployment command: `npx prisma migrate deploy`
 - Indexes: `Task(userId, status)`, `Task(userId, createdAt)`, `TaskTimeLog(taskId, startedAt)`, plus partial unique indexes.
-- Foreign keys: All defined with `ON DELETE CASCADE` where appropriate (`Task` → `TaskTimeLog`, `Account`/`Session` → `User`).
+- Foreign keys: All defined with `ON DELETE CASCADE` where appropriate (`Task` → `TaskTimeLog`, `Account`/`Session` → `User`). Cascade remains a safeguard; application task delete becomes a transactional soft delete.
 - Connection pooling: Not explicitly configured in Prisma singleton (uses Prisma defaults). Production deployment should review `DATABASE_URL` connection limits and Prisma connection pool settings.
 - Database-level safeguards verified through migration SQL review; live constraint behavior deferred per DB access limitation.
 
@@ -37,7 +39,7 @@ Status: COMPLETE (structural review and documentation)
 
 ## Authorization Coverage Review
 
-- Task CRUD: All repository queries include `userId` filter. Service verifies task ownership before mutations (get/update/delete). List results scoped to `userId`.
+- Task CRUD: All repository queries include `userId` filter. Service verifies task ownership before mutations (get/update/delete). List results scoped to `userId`. **Soft-delete amendment (planned):** all task/timelog reads and mutations must also filter `deletedAt IS NULL`; delete becomes transactional soft delete (409 if active, 404 if missing/deleted).
 - Lifecycle (start/pause/resume/complete): Service acquires user row lock (`SELECT FOR UPDATE`) and verifies task belongs to user before any state change.
 - Time log retrieval (`GET /api/tasks/:taskId/timelogs`): Service verifies task ownership before returning logs; repository filters by `taskId`.
 - Analytics: All endpoints use `userId` (placeholder for session-based resolution) to scope queries.

@@ -19,6 +19,8 @@ Requirements met:
 - No N+1 query patterns; single queries per endpoint.
 - Uses centralized response utilities (`createSuccessResponse`).
 
+**Soft-delete amendment (planned):** all analytics queries must exclude `deletedAt IS NOT NULL` tasks/time logs so deleted data never appears in dashboard totals.
+
 Notes:
 
 - Analytics service (`analytics.service.ts`) calculates durations in application layer for active sessions since database-level interval arithmetic for mixed open/closed logs is complex; future optimization could use PostgreSQL interval arithmetic in raw SQL.

@@ -31,6 +31,8 @@ Business rules enforced:
 - Completed is terminal (rejected by service logic).
 - Deletion of active task rejected (409) at service/repository layer.
 
+**Soft-delete amendment (planned):** lifecycle and timelog endpoints must treat soft-deleted tasks as 404 and exclude deleted time logs. `Task_active_user_unique` must be scoped to non-deleted rows.
+
 Tests:
 
 - Basic module structure verified (`tests/unit/tasks/task.module.test.ts`).

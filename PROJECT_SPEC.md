@@ -78,6 +78,7 @@ Fields:
 - createdAt
 - updatedAt
 - completedAt (nullable)
+- deletedAt (nullable, soft delete)
 
 TaskStatus enum:
 
@@ -106,6 +107,7 @@ Fields:
 - startedAt
 - endedAt (nullable)
 - createdAt
+- deletedAt (nullable, soft delete; set when the parent task is soft-deleted)
 
 Every time a task starts or resumes, create a new time-log record.
 
@@ -170,12 +172,16 @@ Create a PostgreSQL partial unique index on TaskTimeLog.taskId where endedAt IS 
 
 The complete cross-table consistency rules must be enforced through transactional service operations and integration tests.
 
-### Task deletion
+### Task deletion (soft delete)
 
 - Only the task owner can delete a task.
-- Associated time logs should be deleted through cascading foreign-key behavior.
-- Do not allow deletion of an active task. Return HTTP 409 and require the user to pause or complete it first.
-- Deleting pending, paused or completed tasks is allowed.
+- Deletion is implemented as a **soft delete**: user-initiated `DELETE /api/tasks/:taskId` must not physically remove rows.
+- Soft-deleting a task sets `deletedAt` (server timestamp) on the `Task` and on all associated `TaskTimeLog` rows in the same database transaction.
+- Soft-deleted tasks and their time logs must not appear in task lists, task retrieval, lifecycle operations, time-log retrieval, analytics, or any other user-facing endpoint. Accessing a soft-deleted task by ID returns `404 Not Found`.
+- Do not allow deletion of an active task. Return HTTP `409 Conflict` and require the user to pause or complete it first. (This preserves the open-time-log invariant.)
+- Deleting pending, paused, or completed tasks is allowed.
+- No restore or undelete endpoint is provided in this change. Data remains in the database for future administrative/recovery work if approved.
+- Database-level cascade FKs may remain as a safeguard for future hard-delete/admin paths, but the application delete path must use soft delete, not `DELETE` on the `Task` row.
 
 ### Task ownership
 
@@ -183,7 +189,7 @@ Never trust a userId supplied by the client.
 
 Derive the authenticated user ID from the server-side Auth.js session.
 
-All task and time-log queries must be scoped to the authenticated user.
+All task and time-log queries must be scoped to the authenticated user and must exclude soft-deleted rows (`deletedAt IS NULL`) unless an explicitly approved administrative path states otherwise. No such administrative path exists in the current scope.
 
 ## 6. Architecture
 
@@ -357,7 +363,8 @@ Implement:
 - Proper foreign keys.
 - Unique constraints.
 - Required indexes.
-- Cascading deletion where appropriate.
+- Cascading foreign-key behavior where appropriate (safeguard for future hard-delete/admin paths).
+- Soft-delete columns (`deletedAt`) and query/index strategy that preserves correctness for non-deleted data.
 - Partial unique indexes using custom PostgreSQL migration SQL.
 
 Important indexes:
@@ -365,8 +372,9 @@ Important indexes:
 - Task(userId, status)
 - Task(userId, createdAt)
 - TaskTimeLog(taskId, startedAt)
-- Unique active task per user.
-- Unique open time log per task.
+- Unique active non-deleted task per user: partial unique index on `Task(userId)` where `status = 'active' AND deletedAt IS NULL`.
+- Unique open time log per task: partial unique index on `TaskTimeLog(taskId)` where `endedAt IS NULL` (review during implementation; active-task deletion is blocked so soft-deleted active/open-log combinations must not occur through the public API).
+- Consider indexes supporting soft-delete filtering if query plans require them (e.g., `Task(userId, deletedAt, createdAt)` or equivalent), validated during implementation.
 
 Use UUIDs for task and time-log identifiers. Use an Auth.js-compatible user ID type consistently.
 
@@ -508,6 +516,7 @@ The backend is considered complete only when:
 - Task lifecycle works.
 - Time logs are accurate.
 - Only one task can be active per user.
+- Soft delete hides deleted tasks/time logs from all user-facing endpoints while preserving data in the database.
 - Transactions and concurrency behavior are verified.
 - Analytics endpoints work.
 - Automated tests pass.

@@ -1,6 +1,6 @@
 # Phase 4: Task Management Module
 
-Status: COMPLETE
+Status: COMPLETE (original hard-delete behavior; **soft-delete amendment planned** — see `IMPLEMENTATION_PLAN.md` / `PROJECT_SPEC.md`)
 
 Deliverables:
 
@@ -18,7 +18,7 @@ Requirements met:
 - List supports pagination (`page`, `limit`) and filtering (`status`, `tag`); scoped to authenticated user; stable ordering; pagination metadata returned.
 - Retrieve verifies ownership (404 for missing/inaccessible).
 - Update allows only `title` and `tag`; rejects `status` mutation.
-- Delete verifies ownership; rejects active task deletion with 409; allows pending/paused/completed deletion; cascade handled by database foreign keys.
+- Delete verifies ownership; rejects active task deletion with 409. **Original:** hard-deleted pending/paused/completed tasks with DB cascade. **Planned amendment:** soft-delete task + time logs (`deletedAt`), hide from all user-facing endpoints.
 - Client-supplied `status` and `userId` rejected/ignored appropriately.
 
 Architecture:
@@ -36,3 +36,4 @@ Not implemented:
 - Task lifecycle endpoints (start, pause, resume, complete)
 - Time tracking endpoints
 - Authentication session resolution (uses placeholder userId; ready for Phase 2 integration)
+- **Soft-delete data model/code/tests** (docs updated; implementation pending)

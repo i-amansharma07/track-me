@@ -31,7 +31,7 @@ Error codes:
 - `VALIDATION_ERROR` (400) — Zod validation failed.
 - `AUTHENTICATION_ERROR` (401) — No valid session.
 - `AUTHORIZATION_ERROR` (403) — Not allowed for this user.
-- `NOT_FOUND` (404) — Resource missing or not owned by user.
+- `NOT_FOUND` (404) — Resource missing, not owned by user, or soft-deleted (soft-deleted resources are not distinguishable from missing to the user).
 - `BUSINESS_CONFLICT` (409) — Invalid state transition, active task conflict, active task deletion blocked.
 - `INTERNAL_ERROR` (500) — Unexpected server error.
 
@@ -64,7 +64,8 @@ Response (201):
     "tag": "Study",
     "createdAt": "...",
     "updatedAt": "...",
-    "completedAt": null
+    "completedAt": null,
+    "deletedAt": null
   }
 }
 ```
@@ -72,13 +73,14 @@ Response (201):
 Notes:
 
 - Status is always `pending`.
+- `deletedAt` is `null` for active (non-deleted) tasks; soft-deleted tasks are not returned by user-facing endpoints.
 - `userId` is derived server-side from the session; ignore any client value.
 
 ---
 
 ### GET /api/tasks
 
-List tasks with pagination and filtering.
+List tasks with pagination and filtering. **Only non-deleted tasks** (`deletedAt IS NULL`) are returned.
 
 Query parameters:
 
@@ -109,7 +111,7 @@ Ordering is stable by `userId` asc, `createdAt` asc, `id` asc.
 
 ### GET /api/tasks/:taskId
 
-Retrieve a single task. Returns 404 if missing or not owned by user.
+Retrieve a single task. Returns 404 if missing, not owned by user, or soft-deleted.
 
 Response (200):
 
@@ -142,7 +144,13 @@ Response (200): updated task object.
 
 ### DELETE /api/tasks/:taskId
 
-Delete a task. Rejected (409) if the task is `active`. Pending, paused, and completed tasks can be deleted; associated time logs cascade through the database foreign key.
+Soft-delete a task. This endpoint **does not physically delete** rows.
+
+- Rejected (409) if the task is `active` (pause or complete first).
+- Allowed for `pending`, `pause`, and `completed` tasks.
+- Sets `deletedAt` to the current server timestamp on the task and on all associated `TaskTimeLog` rows in a single transaction.
+- After success, the task and its time logs are hidden from all user-facing endpoints (list, get, lifecycle, time logs, analytics) and direct access returns 404.
+- No restore/undelete endpoint exists in the current scope.
 
 Response (200):
 
@@ -202,7 +210,7 @@ Response (200): updated task.
 
 ### GET /api/tasks/:taskId/timelogs
 
-Retrieve time logs for the task, ordered by `startedAt` ascending. Returns 404 if the task does not exist or is not owned by the user.
+Retrieve time logs for the task, ordered by `startedAt` ascending. Returns 404 if the task does not exist, is not owned by the user, or is soft-deleted. **Only non-deleted time logs** are returned.
 
 Response (200):
 
@@ -211,7 +219,14 @@ Response (200):
   "success": true,
   "message": "Time logs retrieved",
   "data": [
-    { "id": "...", "taskId": "...", "startedAt": "...", "endedAt": "...", "createdAt": "..." }
+    {
+      "id": "...",
+      "taskId": "...",
+      "startedAt": "...",
+      "endedAt": "...",
+      "createdAt": "...",
+      "deletedAt": null
+    }
   ]
 }
 ```
@@ -223,6 +238,13 @@ Response (200):
 - Never calculate or submit duration values from the frontend timer. Server timestamps (`startedAt`, `endedAt`) are authoritative.
 - For active tasks, include the current session `startedAt` timestamp and total completed session duration from analytics endpoints.
 - Do not implement direct `POST` or `PATCH` endpoints for `TaskTimeLog`.
+- Treat `deletedAt` as an internal soft-delete marker. User-facing APIs exclude deleted records; do not expect deleted tasks/time logs to be returned.
+
+## Soft delete (frontend contract)
+
+- `DELETE /api/tasks/:taskId` performs a **soft delete**. The resource is hidden, not physically removed.
+- After a successful delete, remove the task from local UI state and do not refetch it by ID.
+- Analytics and dashboard endpoints must exclude soft-deleted tasks/time logs (implementation requirement); the frontend should not compensate for deleted data.
 
 ## Authentication setup
 

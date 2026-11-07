@@ -17,7 +17,7 @@ PORT=3000
 ## Deployment steps
 
 1. Generate Prisma client: `npx prisma generate`
-2. Deploy migrations: `npx prisma migrate deploy`
+2. Deploy migrations: `npx prisma migrate deploy` (includes any future soft-delete migration; never edit applied migrations)
 3. Build: `npm run build`
 4. Start: `npm run start`
 5. Verify health: `GET /api/health` should return `{ "status": "ok" }`

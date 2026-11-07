@@ -8,8 +8,10 @@
 - Account (provider, providerAccountId, refresh_token, access_token, expires_at, token_type, scope, id_token, session_state)
 - Session (sessionToken, userId, expires)
 - VerificationToken (identifier, token, expires)
-- Task (id UUID, userId UUID, title, status enum, tag enum, createdAt, updatedAt, completedAt)
-- TaskTimeLog (id UUID, taskId UUID, startedAt, endedAt, createdAt)
+- Task (id UUID, userId UUID, title, status enum, tag enum, createdAt, updatedAt, completedAt, **deletedAt nullable — planned soft delete**)
+- TaskTimeLog (id UUID, taskId UUID, startedAt, endedAt, createdAt, **deletedAt nullable — planned soft delete**)
+
+> **Current state:** `prisma/schema.prisma` and applied migrations do not yet include `deletedAt`. The "Soft Delete Amendment" in `IMPLEMENTATION_PLAN.md` describes the required migration and code changes. Apply only via a new migration; do not edit applied migrations.
 
 ## Migrations
 
@@ -18,8 +20,8 @@
 
 Custom SQL included in the migration:
 
-- Partial unique index on `Task(userId)` WHERE `status = 'active'`
-- Partial unique index on `TaskTimeLog(taskId)` WHERE `endedAt IS NULL`
+- Partial unique index on `Task(userId)` WHERE `status = 'active'` (**to be revised to `AND "deletedAt" IS NULL` in the soft-delete migration**)
+- Partial unique index on `TaskTimeLog(taskId)` WHERE `endedAt IS NULL` (review alongside soft-delete invariants)
 - Check constraint on `Task`: `TRIM(title) <> ''`
 
 ## Setup Instructions
@@ -44,7 +46,8 @@ Custom SQL included in the migration:
 - All models can be created.
 - Relationships work (User → Task, Task → TaskTimeLog, User → Account/Session).
 - Foreign keys reject invalid references.
-- A user cannot have two active tasks (partial unique index).
+- A user cannot have two active **non-deleted** tasks (partial unique index, after soft-delete migration).
 - A task cannot have two open time logs (partial unique index).
-- Deleting a task cascades to its time logs.
+- **Soft delete (after implementation):** `DELETE /api/tasks/:taskId` sets `deletedAt` on task and time logs; rows remain; deleted records are hidden from all user-facing queries/endpoints.
+- Cascade FKs remain as safeguards for future approved hard-delete/admin paths (application delete path uses soft delete).
 - Empty/whitespace-only titles are rejected (check constraint).
