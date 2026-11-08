@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import type { AnalyticsTask, AnalyticsTimelineSegment } from "@/lib/api";
 import { formatSeconds } from "./analytics-utils";
 import styles from "./analytics-legend.module.css";
@@ -10,21 +10,28 @@ type Props = {
   timeline: AnalyticsTimelineSegment[];
   colorMap: Record<string, string>;
   trackedPercentage: number;
+  selectedTaskId?: string | null;
+  onSelectTask?: (id: string) => void;
 };
 
-export function AnalyticsLegend({ tasks, timeline, colorMap, trackedPercentage }: Props) {
+export function AnalyticsLegend({
+  tasks,
+  timeline,
+  colorMap,
+  trackedPercentage,
+  selectedTaskId,
+  onSelectTask,
+}: Props) {
   const defaultId = useMemo(() => {
     const first = timeline.find((s) => s.type === "task" && tasks.some((t) => t.id === s.taskId));
     return first && first.type === "task" ? first.taskId : tasks[0]?.id ?? null;
   }, [timeline, tasks]);
 
-  const [selectedId, setSelectedId] = useState<string | null>(defaultId);
-
   useEffect(() => {
-    if (!selectedId || !tasks.some((t) => t.id === selectedId)) {
-      setSelectedId(defaultId);
+    if (onSelectTask && (!selectedTaskId || !tasks.some((t) => t.id === selectedTaskId)) && defaultId) {
+      onSelectTask(defaultId);
     }
-  }, [selectedId, tasks, defaultId]);
+  }, [onSelectTask, selectedTaskId, tasks, defaultId]);
 
   if (tasks.length === 0) {
     return (
@@ -35,7 +42,7 @@ export function AnalyticsLegend({ tasks, timeline, colorMap, trackedPercentage }
     );
   }
 
-  const selected = tasks.find((t) => t.id === selectedId) ?? tasks[0];
+  const selected = tasks.find((t) => t.id === selectedTaskId) ?? tasks.find((t) => t.id === defaultId) ?? tasks[0];
 
   return (
     <div className={styles.wrap}>
@@ -56,7 +63,7 @@ export function AnalyticsLegend({ tasks, timeline, colorMap, trackedPercentage }
               title={task.title}
               className={`${styles.swatchBtn} ${active ? styles.swatchActive : ""}`.trim()}
               style={{ backgroundColor: colorMap[task.id] }}
-              onClick={() => setSelectedId(task.id)}
+              onClick={() => onSelectTask?.(task.id)}
             />
           );
         })}

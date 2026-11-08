@@ -47,6 +47,23 @@ export default function AnalyticsPage() {
   }, [load]);
 
   const colorMap = useMemo(() => taskColorMap(data?.tasks ?? []), [data?.tasks]);
+  const defaultTaskId = useMemo(() => {
+    if (!data) return null;
+    const first = data.timeline.find((s) => s.type === "task" && data.tasks.some((t) => t.id === s.taskId));
+    return first && first.type === "task" ? first.taskId : data.tasks[0]?.id ?? null;
+  }, [data]);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [highlightTimeline, setHighlightTimeline] = useState(false);
+
+  useEffect(() => {
+    if (!data) {
+      setSelectedTaskId(null);
+      setHighlightTimeline(false);
+      return;
+    }
+    setHighlightTimeline(false);
+    setSelectedTaskId((prev) => (prev && data.tasks.some((t) => t.id === prev) ? prev : defaultTaskId));
+  }, [data, defaultTaskId]);
   const isToday = date === todayIso();
 
   return (
@@ -102,11 +119,27 @@ export default function AnalyticsPage() {
               <div className={styles.viz}>
                 <section className={styles.panel} aria-label="Timeline">
                   <h2 className={styles.panelTitle}>24-hour timeline</h2>
-                  <AnalyticsTimeline timeline={data.timeline} dayDurationMinutes={data.dayDurationMinutes} colorMap={colorMap} />
+                  <AnalyticsTimeline
+                    timeline={data.timeline}
+                    tasks={data.tasks}
+                    dayDurationMinutes={data.dayDurationMinutes}
+                    colorMap={colorMap}
+                    selectedTaskId={highlightTimeline ? selectedTaskId : null}
+                  />
                 </section>
                 <section className={styles.panel} aria-label="Tasks">
                   <h2 className={styles.panelTitle}>Tasks</h2>
-                  <AnalyticsLegend tasks={data.tasks} timeline={data.timeline} colorMap={colorMap} trackedPercentage={data.summary.trackedPercentage} />
+                  <AnalyticsLegend
+                    tasks={data.tasks}
+                    timeline={data.timeline}
+                    colorMap={colorMap}
+                    trackedPercentage={data.summary.trackedPercentage}
+                    selectedTaskId={selectedTaskId}
+                    onSelectTask={(id) => {
+                      setSelectedTaskId(id);
+                      setHighlightTimeline(true);
+                    }}
+                  />
                 </section>
               </div>
             </>
