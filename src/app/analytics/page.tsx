@@ -104,9 +104,9 @@ export default function AnalyticsPage() {
                   <h2 className={styles.panelTitle}>24-hour timeline</h2>
                   <AnalyticsTimeline timeline={data.timeline} dayDurationMinutes={data.dayDurationMinutes} colorMap={colorMap} />
                 </section>
-                <section className={styles.panel} aria-label="Legend">
+                <section className={styles.panel} aria-label="Tasks">
                   <h2 className={styles.panelTitle}>Tasks</h2>
-                  <AnalyticsLegend tasks={data.tasks} colorMap={colorMap} trackedPercentage={data.summary.trackedPercentage} />
+                  <AnalyticsLegend tasks={data.tasks} timeline={data.timeline} colorMap={colorMap} trackedPercentage={data.summary.trackedPercentage} />
                 </section>
               </div>
             </>
