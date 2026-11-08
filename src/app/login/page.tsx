@@ -2,6 +2,7 @@
 
 import { Suspense } from 'react';
 import { useEffect } from 'react';
+import Image from 'next/image';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -28,7 +29,8 @@ function LoginContent() {
     <main className={styles.container}>
       <Card variant="elevated" className={styles.card}>
         <div className={styles.inner}>
-          <h1 className={styles.title}>Track Me</h1>
+          <Image src="/brand/quartz-mark-on-dark.svg" alt="" width={56} height={56} className={styles.logo} priority />
+          <h1 className={styles.title}>Quartz</h1>
           <p className={styles.subtitle}>Sign in to manage your tasks and track time.</p>
           <Button
             onClick={() => {

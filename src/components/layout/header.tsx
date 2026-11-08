@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -14,8 +15,9 @@ export function Header() {
   return (
     <header className={styles.header}>
       <div className={styles.left}>
-        <Link href="/tasks" className={styles.brand}>
-          Track Me
+        <Link href="/tasks" className={styles.brand} aria-label="Quartz home">
+          <Image src="/brand/quartz-mark-on-dark.svg" alt="" width={28} height={28} className={styles.brandMark} priority />
+          <span className={styles.brandText}>Quartz</span>
         </Link>
         {user && (
           <nav className={styles.nav} aria-label="Primary">
